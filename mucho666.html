@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mucho666 — Email Sender</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06080f;--s1:#0c0f1c;--s2:#111628;--s3:#171d32;
+  --b1:#1f2844;--b2:#2a3660;--b3:#3d4f88;
+  --a:#7c6fff;--a2:#a99dff;--a3:#d6d0ff;
+  --g:#00f5a0;--r:#ff4d6d;--y:#ffc947;--t:#dde4ff;--t2:#6875a8;--t3:#37426b;
+  --mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+  --rad:14px;--rad2:9px;--glow:0 0 0 3px rgba(124,111,255,.3);
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--t);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:24px 20px 80px;}
+.wrap{width:100%;max-width:900px;display:flex;flex-direction:column;gap:20px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:16px;padding-bottom:24px;border-bottom:1px solid var(--b1)}
+.hdr-logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#7c6fff,#b347ff);
+  display:grid;place-items:center;font-size:24px;flex-shrink:0}
+.hdr-name{font-size:24px;font-weight:700;letter-spacing:-1px;
+  background:linear-gradient(90deg,#a99dff,#7c6fff);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.hdr-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-dot{width:8px;height:8px;border-radius:50%;background:var(--g);
+  box-shadow:0 0 8px var(--g);animation:blink 3s ease-in-out infinite}
+.hdr-pill{font-family:var(--mono);font-size:10px;padding:4px 11px;border-radius:20px;
+  color:var(--a2);background:rgba(124,111,255,.12);border:1px solid rgba(124,111,255,.28)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* BACKEND BADGE */
+.bb{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;
+  cursor:pointer;font-size:12px;font-weight:600;border:1px solid}
+.bb.online{background:rgba(0,245,160,.08);border-color:rgba(0,245,160,.25);color:var(--g)}
+.bb.offline{background:rgba(255,77,109,.08);border-color:rgba(255,77,109,.25);color:var(--r)}
+.bb.checking{background:rgba(255,201,71,.08);border-color:rgba(255,201,71,.25);color:var(--y)}
+.bb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bb.online .bb-dot{background:var(--g)}
+.bb.offline .bb-dot{background:var(--r)}
+.bb.checking .bb-dot{background:var(--y)}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rad)}
+.card-hd{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.card-hd-ico{width:30px;height:30px;border-radius:7px;background:rgba(124,111,255,.12);
+  border:1px solid rgba(124,111,255,.2);display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.card-hd-title{font-size:14px;font-weight:600}
+.card-hd-sub{font-size:12px;color:var(--t2);margin-left:6px}
+
+/* PROVIDER TABS */
+.prov-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.pt{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:8px;
+  border:1px solid var(--b1);background:var(--s2);cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--t2);
+  transition:all .15s;white-space:nowrap}
+.pt:hover{border-color:var(--b2);color:var(--t);background:var(--s3)}
+.pt.on{border-color:var(--a);background:rgba(124,111,255,.12);color:var(--a2)}
+.pt-ico{font-size:16px}
+.pt-tag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.tag-smtp{background:rgba(129,140,248,.15);color:#a5b4fc;border:1px solid rgba(129,140,248,.2)}
+.tag-gm{background:rgba(248,113,113,.12);color:#fca5a5;border:1px solid rgba(248,113,113,.2)}
+.tag-out{background:rgba(96,165,250,.12);color:#93c5fd;border:1px solid rgba(96,165,250,.2)}
+.tag-ses{background:rgba(251,146,60,.12);color:#fdba74;border:1px solid rgba(251,146,60,.2)}
+.tag-sg{background:rgba(52,211,153,.12);color:#6ee7b7;border:1px solid rgba(52,211,153,.2)}
+.tag-bv{background:rgba(45,212,191,.12);color:#5eead4;border:1px solid rgba(45,212,191,.2)}
+
+/* PROVIDER PANELS */
+.pp{display:none;flex-direction:column;gap:16px;padding:20px}
+.pp.on{display:flex}
+
+/* FORM ELEMENTS */
+.lbl{display:block;font-size:11px;font-weight:600;color:var(--t2);
+  text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.req{color:var(--r);margin-left:2px}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--rad2);color:var(--t);font-family:var(--sans);font-size:14px;
+  padding:10px 13px;outline:none;transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--a);box-shadow:var(--glow)}
+input:hover:not(:focus),textarea:hover:not(:focus),select:hover:not(:focus){border-color:var(--b2)}
+input[readonly]{color:var(--t2);background:var(--s1)}
+input::placeholder,textarea::placeholder{color:var(--t3)}
+textarea{resize:vertical;min-height:130px;line-height:1.75}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236875a8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer}
+select option{background:var(--s2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:13px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+@media(max-width:600px){.g2,.g21,.g3{grid-template-columns:1fr}}
+.hint{font-size:11.5px;color:var(--t3);margin-top:4px;line-height:1.5}
+
+/* INFO BOXES */
+.ib{display:flex;gap:11px;padding:12px 15px;border-radius:var(--rad2);
+  font-size:12.5px;line-height:1.65;border:1px solid}
+.ib.info{background:rgba(124,111,255,.06);border-color:rgba(124,111,255,.2);color:var(--a3)}
+.ib.warn{background:rgba(255,201,71,.06);border-color:rgba(255,201,71,.2);color:#fde68a}
+.ib.ses{background:rgba(251,146,60,.06);border-color:rgba(251,146,60,.2);color:#fdba74}
+.ib.sg{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.2);color:#6ee7b7}
+.ib.bv{background:rgba(45,212,191,.06);border-color:rgba(45,212,191,.2);color:#5eead4}
+.ib a{color:inherit;text-decoration:underline}
+.ib code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px}
+.ib-ico{flex-shrink:0;font-size:15px;margin-top:1px}
+
+/* TOGGLE */
+.tog{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;width:fit-content}
+.tog input[type=checkbox]{display:none}
+.tog-track{width:38px;height:21px;background:var(--b1);border-radius:11px;
+  position:relative;transition:background .2s;flex-shrink:0}
+.tog-track::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;
+  background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tog input:checked~.tog-track{background:var(--a)}
+.tog input:checked~.tog-track::after{transform:translateX(17px)}
+.tog-lbl{font-size:13px;color:var(--t2)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border:none;border-radius:var(--rad2);font-family:var(--sans);font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-send{background:linear-gradient(135deg,#7c6fff,#5a4ed4);color:#fff;
+  padding:12px 28px;font-size:15px;box-shadow:0 4px 20px rgba(124,111,255,.4)}
+.btn-send:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 28px rgba(124,111,255,.55)}
+.btn-send:disabled{background:var(--b1);color:var(--t3);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-2{background:var(--s2);border:1px solid var(--b1);color:var(--t2);padding:10px 18px;font-size:13px}
+.btn-2:hover{border-color:var(--a);color:var(--t)}
+.btn-ghost{background:transparent;color:var(--t3);padding:9px 14px;font-size:13px}
+.btn-ghost:hover{color:var(--t2);background:var(--s2);border-radius:var(--rad2)}
+.btn-sg{background:linear-gradient(135deg,#34d399,#059669);color:#000;padding:10px 20px;font-size:13px;font-weight:700}
+.btn-sg:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(52,211,153,.4)}
+.btn-ses{background:linear-gradient(135deg,#fb923c,#ea580c);color:#000;padding:10px 20px;font-size:13px;font-weight:700}
+.btn-ses:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(251,146,60,.4)}
+.btn-bv{background:linear-gradient(135deg,#2dd4bf,#0d9488);color:#000;padding:10px 20px;font-size:13px;font-weight:700}
+.btn-bv:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,212,191,.4)}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* COMPOSE STEPS */
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:16px;padding:20px;align-items:flex-start}
+.step+.step{border-top:1px solid var(--b1)}
+.step-n{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--a),#5a4ed4);
+  color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center;flex-shrink:0;margin-top:1px}
+.step-n.opt{background:var(--s3);border:1px solid var(--b1);color:var(--t3);font-size:13px}
+.step-body{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:600;margin-bottom:9px}
+.step-sub{font-size:12px;color:var(--t3);margin-bottom:8px;line-height:1.5}
+kbd{display:inline-block;background:var(--s3);border:1px solid var(--b2);
+  border-radius:4px;padding:0px 5px;font-size:11px;font-family:var(--mono);color:var(--t2)}
+
+/* TAG INPUT */
+.tagbox{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;
+  background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad2);
+  padding:7px 10px;min-height:46px;max-height:120px;overflow-y:auto;
+  cursor:text;transition:border-color .15s,box-shadow .15s}
+.tagbox-info{display:flex;align-items:center;justify-content:space-between;
+  margin-top:6px;flex-wrap:wrap;gap:6px}
+.tagbox-count{font-family:var(--mono);font-size:11px;color:var(--t3)}
+.tagbox-actions{display:flex;gap:7px}
+.tagbox-clear{background:transparent;border:1px solid var(--b1);border-radius:5px;
+  color:var(--t3);padding:3px 10px;font-size:11.5px;font-family:var(--sans);cursor:pointer;transition:all .12s}
+.tagbox-clear:hover{border-color:var(--r);color:var(--r)}
+.tagbox:focus-within{border-color:var(--a);box-shadow:var(--glow)}
+.chip{display:inline-flex;align-items:center;gap:4px;background:rgba(124,111,255,.15);
+  border:1px solid rgba(124,111,255,.28);border-radius:4px;padding:2px 7px;
+  font-size:11px;color:var(--a2);max-width:220px}
+.chip span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-x{cursor:pointer;opacity:.5;font-size:14px;line-height:1}
+.chip-x:hover{opacity:1;color:var(--r)}
+.ghost{flex:1;min-width:140px;background:transparent;border:none;outline:none;
+  color:var(--t);font-size:13.5px;font-family:var(--sans);padding:2px 0}
+.ghost::placeholder{color:var(--t3)}
+.tagerr{font-size:11.5px;color:var(--r);display:none;margin-top:4px}
+.import-row{display:flex;align-items:center;gap:9px;margin-top:9px;flex-wrap:wrap}
+.import-btn{display:inline-flex;align-items:center;gap:6px;background:var(--s3);
+  border:1px solid var(--b2);border-radius:6px;color:var(--t2);padding:6px 13px;
+  font-size:12px;font-family:var(--sans);font-weight:500;cursor:pointer;transition:all .15s}
+.import-btn:hover{border-color:var(--a);color:var(--a2)}
+.import-hint{font-size:11px;color:var(--t3)}
+.import-count{font-size:12px;color:var(--g);background:rgba(0,245,160,.1);
+  border:1px solid rgba(0,245,160,.2);border-radius:4px;padding:2px 8px;font-family:var(--mono)}
+.ccbcc-btn{background:transparent;border:1px dashed var(--b2);border-radius:5px;
+  color:var(--t2);padding:5px 12px;font-size:12px;font-family:var(--sans);cursor:pointer;
+  margin-top:9px;transition:all .15s}
+.ccbcc-btn:hover{border-color:var(--a);color:var(--a2)}
+
+/* HTML EDITOR */
+.editor-wrap{border:1px solid var(--b1);border-radius:var(--rad2);overflow:hidden}
+.editor-tb{display:flex;flex-wrap:wrap;gap:2px;padding:8px 10px;background:var(--s2);border-bottom:1px solid var(--b1)}
+.tb{background:transparent;border:none;color:var(--t2);padding:4px 8px;border-radius:4px;
+  cursor:pointer;font-size:12px;font-family:var(--sans);font-weight:500;transition:all .12s;min-height:26px}
+.tb:hover{background:var(--b1);color:var(--t)}
+.tb-sep{width:1px;height:16px;background:var(--b1);margin:0 3px;flex-shrink:0;align-self:center}
+.editor-area{background:var(--s2);color:var(--t);font-family:var(--sans);font-size:14px;
+  min-height:150px;padding:13px;outline:none;line-height:1.8;transition:background .15s}
+.editor-area:focus{background:var(--s3)}
+.editor-area:empty::before{content:attr(data-ph);color:var(--t3);pointer-events:none}
+
+/* MODE SWITCHER */
+.mode-sw{display:flex;border:1px solid var(--b1);border-radius:7px;overflow:hidden;flex-shrink:0}
+.mode-btn{background:transparent;border:none;color:var(--t3);padding:7px 15px;font-size:12.5px;
+  font-family:var(--sans);font-weight:500;cursor:pointer;transition:all .15s;border-right:1px solid var(--b1)}
+.mode-btn:last-child{border-right:none}
+.mode-btn:hover{color:var(--t2);background:var(--s3)}
+.mode-btn.on{background:rgba(124,111,255,.12);color:var(--a2)}
+
+/* DROPZONE */
+.dz{border:2px dashed var(--b2);border-radius:var(--rad2);padding:26px;text-align:center;
+  cursor:pointer;position:relative;transition:all .15s;overflow:hidden}
+.dz:hover,.dz.drag{border-color:var(--a);background:rgba(124,111,255,.05)}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.flist{display:flex;flex-direction:column;gap:6px;margin-top:11px}
+.fitem{display:flex;align-items:center;gap:9px;background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--rad2);padding:9px 13px}
+.fitem-name{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.fitem-size{font-size:11px;color:var(--t3);font-family:var(--mono);flex-shrink:0}
+.fitem-rm{cursor:pointer;color:var(--t3);font-size:17px;transition:color .12s;flex-shrink:0;line-height:1}
+.fitem-rm:hover{color:var(--r)}
+
+/* OPTS */
+.opts-btn{background:transparent;border:none;color:var(--t2);font-size:13px;font-family:var(--sans);
+  font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;padding:0}
+.opts-btn:hover{color:var(--t)}
+.opts-arrow{transition:transform .2s;color:var(--t3);font-size:11px;display:inline-block}
+.opts-arrow.open{transform:rotate(90deg)}
+
+/* CHAR COUNT */
+.ffoot{display:flex;justify-content:flex-end;margin-top:4px}
+.cc{font-family:var(--mono);font-size:11px;color:var(--t3)}
+
+/* SEND FOOTER */
+.sfooter{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:11px;padding:15px 20px 20px;border-top:1px solid var(--b1);background:rgba(0,0,0,.12)}
+.sfooter-info{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px;color:var(--t3)}
+.sfooter-prov{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
+  color:var(--a2);background:rgba(124,111,255,.12);border:1px solid rgba(124,111,255,.2)}
+.sfooter-actions{display:flex;align-items:center;gap:9px}
+
+/* PROGRESS BAR */
+.progress{display:none;border-top:1px solid var(--b1)}
+.pb-bar-bg{height:4px;background:var(--s3);overflow:hidden}
+.pb-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--a),var(--g));transition:width .35s}
+.pb-info{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap;font-size:12.5px}
+.pb-ok{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--g)}
+.pb-pct{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--a2);margin-left:auto}
+.pb-eta{font-size:11px;color:var(--t3);font-family:var(--mono)}
+.pb-btn{background:var(--s3);border:1px solid var(--b2);border-radius:5px;color:var(--t2);
+  padding:4px 11px;font-size:11.5px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.pb-btn:hover{border-color:var(--r);color:var(--r)}
+
+/* DELIVERABILITY */
+.deliv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+@media(max-width:700px){.deliv-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.deliv-grid{grid-template-columns:1fr}}
+.dcard{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad2);padding:16px}
+.dcard-hd{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.dcard-name{font-size:13px;font-weight:700;flex:1}
+.dbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono)}
+.db-ok{color:var(--g);background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2)}
+.db-warn{color:var(--y);background:rgba(255,201,71,.1);border:1px solid rgba(255,201,71,.2)}
+.db-na{color:var(--t3);background:var(--s1);border:1px solid var(--b1)}
+.dst{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 10px;border-radius:5px;margin-top:7px}
+.dst-ok{color:var(--g);background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.18)}
+.dst-ko{color:var(--r);background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.18)}
+.dst-na{color:var(--t3);background:var(--s1);border:1px solid var(--b1)}
+.dcode{font-family:var(--mono);font-size:10.5px;background:#03040a;border:1px solid var(--b1);
+  border-radius:5px;padding:10px 12px;color:#93c5fd;overflow-x:auto;white-space:pre;
+  line-height:1.7;cursor:pointer;margin-top:8px;position:relative}
+.dcode:hover{border-color:var(--a)}
+.dcode::after{content:'⎘';position:absolute;top:6px;right:8px;font-size:11px;color:var(--t3)}
+.dcode-hint{font-size:11px;color:var(--t3);margin-top:4px}
+.score-wrap{background:var(--s1);border-radius:4px;height:6px;overflow:hidden;margin-top:5px}
+.score-fill{height:100%;border-radius:4px;transition:width .8s}
+.sf-g{background:linear-gradient(90deg,#00f5a0,#00b894)}
+.sf-y{background:linear-gradient(90deg,#ffc947,#ff9f43)}
+.sf-r{background:linear-gradient(90deg,#ff4d6d,#c0392b)}
+.prac-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:600px){.prac-grid{grid-template-columns:1fr}}
+.prac-item{display:flex;gap:9px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad2);padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.6}
+.stitle{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.9px;
+  display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--b1)}
+
+/* LOG */
+.logpanel{background:#03040b;border:1px solid var(--b1);border-radius:var(--rad)}
+.logpanel.on{display:block}
+.logpanel{display:none}
+.log-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b1)}
+.log-title{font-family:var(--mono);font-size:11px;color:var(--t2);letter-spacing:.7px;display:flex;align-items:center;gap:7px}
+.log-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s ease-in-out infinite}
+.log-body{padding:10px 16px;max-height:220px;overflow-y:auto;font-family:var(--mono);font-size:11.5px;line-height:2}
+.lline{display:flex;gap:12px}
+.ltime{color:var(--t3);flex-shrink:0;min-width:62px}
+.lmsg{color:var(--t2)}
+.lmsg.ok{color:var(--g)}.lmsg.err{color:var(--r)}.lmsg.warn{color:var(--y)}.lmsg.info{color:#93c5fd}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;
+  padding:20px;pointer-events:none}
+.overlay.on{display:flex;pointer-events:auto}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:16px;
+  width:100%;max-width:660px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.modal-title{font-size:15px;font-weight:700}
+.modal-x{width:28px;height:28px;border:none;background:var(--s2);border-radius:7px;color:var(--t2);
+  cursor:pointer;font-size:15px;display:grid;place-items:center;transition:all .12s}
+.modal-x:hover{background:var(--b1);color:var(--t)}
+.modal-body{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+.prev-row{display:flex;gap:9px;font-size:13px}
+.prev-key{color:var(--t3);min-width:65px;flex-shrink:0;font-family:var(--mono);font-size:11px;padding-top:1px}
+.prev-val{color:var(--t);word-break:break-all}
+.prev-sep{height:1px;background:var(--b1);margin:6px 0}
+
+/* TOAST */
+#toasts{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column-reverse;gap:8px;z-index:9999;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--b1);
+  border-radius:10px;padding:12px 16px;font-size:13px;max-width:340px;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);pointer-events:auto;
+  animation:tin .2s ease}
+@keyframes tin{from{opacity:0;transform:translateX(18px)}}
+.toast.out{animation:tout .15s ease forwards}
+@keyframes tout{to{opacity:0;transform:translateX(18px)}}
+.t-ico{flex-shrink:0;font-size:15px}
+.toast.success{border-color:rgba(0,245,160,.25)}.toast.success .t-ico{color:var(--g)}
+.toast.error{border-color:rgba(255,77,109,.25)}.toast.error .t-ico{color:var(--r)}
+.toast.info{border-color:rgba(124,111,255,.25)}.toast.info .t-ico{color:var(--a2)}
+.toast.warn{border-color:rgba(255,201,71,.25)}.toast.warn .t-ico{color:var(--y)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+
+/* TXT IMPORT COUNT */
+.txt-import-count{font-size:12px;color:var(--g);background:rgba(0,245,160,.1);
+  border:1px solid rgba(0,245,160,.2);border-radius:4px;padding:2px 8px;font-family:var(--mono)}
+/* SPIN/VAR */
+/* SPIN LETTERS */
+.spin-letter{border:1px solid var(--b1);border-radius:var(--rad2);overflow:hidden;background:var(--s2)}
+.spin-letter-hd{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--b1)}
+.spin-letter-num{font-size:11px;font-weight:700;color:var(--a2);font-family:var(--mono);background:rgba(124,111,255,.15);padding:2px 8px;border-radius:4px}
+.spin-letter-rm{margin-left:auto;cursor:pointer;color:var(--t3);font-size:16px;line-height:1;background:none;border:none;transition:color .12s}
+.spin-letter-rm:hover{color:var(--r)}
+.spin-letter textarea{border:none;border-radius:0;background:var(--s2);min-height:120px}
+.spin-letter textarea:focus{border-color:transparent;box-shadow:none;background:var(--s3)}
+/* ANTI-SPAM SCORE */
+.aspam-bar{height:5px;border-radius:3px;overflow:hidden;background:var(--s3);margin-top:5px}
+.aspam-fill{height:100%;border-radius:3px;transition:width .4s}
+.hint code{font-family:var(--mono);font-size:11px;background:rgba(124,111,255,.15);
+  padding:1px 5px;border-radius:3px;color:var(--a2)}
+/* STATS LIVE */
+.live-stats{display:flex;gap:18px;flex-wrap:wrap;padding:12px 20px;
+  background:rgba(0,0,0,.2);border-top:1px solid var(--b1)}
+.ls-item{display:flex;flex-direction:column;gap:2px}
+.ls-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--t);line-height:1}
+.ls-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px}
+.ls-ok{color:var(--g)}.ls-err{color:var(--r)}.ls-rate{color:var(--a2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">⚡</div>
+  <div>
+    <div class="hdr-name">Mucho666</div>
+    <div class="hdr-sub">Email Sender — SMTP · SES · SendGrid · Brevo · Gmail · Outlook</div>
+  </div>
+  <div class="hdr-right">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <input type="text" id="backend-url-input"
+        placeholder="http://127.0.0.1:2666"
+        style="width:200px;font-family:var(--mono);font-size:11px;padding:5px 9px;
+          border-radius:6px;background:var(--s2);border:1px solid var(--b1);color:var(--t2)"
+        title="URL du backend — ex: http://91.199.133.250:2666"/>
+      <button onclick="applyBackendURL()" style="background:var(--a);border:none;color:#fff;
+        padding:5px 12px;border-radius:6px;font-size:12px;font-family:var(--sans);
+        font-weight:600;cursor:pointer">✓</button>
+      <div id="bb" class="bb offline" onclick="checkBackend()" title="Tester la connexion">
+        <span class="bb-dot" id="bb-dot"></span>
+        <span id="bb-label">Tester</span>
+      </div>
+    </div>
+    <div class="hdr-dot"></div>
+    <div class="hdr-pill" id="hdr-pill">PRÊT</div>
+  </div>
+</header>
+
+<!-- ══ PROVIDER CARD ══ -->
+<div class="card">
+  <div class="card-hd">
+    <div class="card-hd-ico">🔌</div>
+    <div class="card-hd-title">Fournisseur d'envoi</div>
+    <span class="card-hd-sub">Choisissez votre provider</span>
+  </div>
+
+  <div class="prov-tabs">
+    <button class="pt on" onclick="setProv('smtp')">
+      <span class="pt-ico">🔧</span> SMTP <span class="pt-tag tag-smtp">CUSTOM</span>
+    </button>
+    <button class="pt" onclick="setProv('gmail')">
+      <span class="pt-ico">📧</span> Gmail <span class="pt-tag tag-gm">GOOGLE</span>
+    </button>
+    <button class="pt" onclick="setProv('outlook')">
+      <span class="pt-ico">📨</span> Outlook <span class="pt-tag tag-out">MSFT</span>
+    </button>
+    <button class="pt" onclick="setProv('ses')">
+      <span class="pt-ico">☁️</span> AWS SES <span class="pt-tag tag-ses">AWS</span>
+    </button>
+    <button class="pt" onclick="setProv('sendgrid')">
+      <span class="pt-ico">⚡</span> SendGrid <span class="pt-tag tag-sg">API</span>
+    </button>
+    <button class="pt" onclick="setProv('brevo')">
+      <span class="pt-ico">💌</span> Brevo <span class="pt-tag tag-bv">API</span>
+    </button>
+  </div>
+
+  <!-- SMTP -->
+  <div class="pp on" id="pp-smtp">
+    <div class="g21">
+      <div><label class="lbl">Serveur SMTP <span class="req">*</span></label>
+        <input type="text" id="smtp-host" placeholder="smtp.gmail.com"/>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11.5px" onclick="loadPreset('gmail')">Gmail</button>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11.5px" onclick="loadPreset('outlook')">Outlook</button>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11.5px" onclick="loadPreset('ses')">SES</button>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11.5px" onclick="loadPreset('sendgrid')">SendGrid</button>
+        </div>
+      </div>
+      <div><label class="lbl">Port</label>
+        <select id="smtp-port">
+          <option value="587" selected>587 — STARTTLS</option>
+          <option value="465">465 — SSL/TLS</option>
+          <option value="25">25 — Non chiffré</option>
+          <option value="2525">2525 — Alt</option>
+        </select></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Login <span class="req">*</span></label>
+        <input type="email" id="smtp-user" placeholder="user@domaine.com"/></div>
+      <div><label class="lbl">Mot de passe <span class="req">*</span></label>
+        <input type="password" id="smtp-pass" placeholder="••••••••"/></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Chiffrement</label>
+        <select id="smtp-sec">
+          <option value="STARTTLS" selected>STARTTLS</option>
+          <option value="SSL/TLS">SSL/TLS</option>
+          <option value="AUCUN">Aucun</option>
+        </select></div>
+      <div><label class="lbl">Timeout (s)</label>
+        <input type="number" id="smtp-timeout" value="30" min="5" max="120"/></div>
+    </div>
+    <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-2" onclick="testSMTP()">🔗 Tester SMTP</button>
+      <label class="tog" for="smtp-save">
+        <input type="checkbox" id="smtp-save" onchange="saveConf()"/>
+        <div class="tog-track"></div>
+        <span class="tog-lbl">Mémoriser</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Gmail -->
+  <div class="pp" id="pp-gmail">
+    <div class="ib warn">
+      <span class="ib-ico">⚠️</span>
+      <div><strong>App Password requis</strong> — pas votre mot de passe Gmail habituel.<br>
+        1. Activez la <a href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank">vérification 2 étapes</a><br>
+        2. Générez un App Password : <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a><br>
+        Config : <code>smtp.gmail.com:587 STARTTLS</code></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Email Gmail <span class="req">*</span></label>
+        <input type="email" id="gmail-user" placeholder="vous@gmail.com"/></div>
+      <div><label class="lbl">App Password (16 car.) <span class="req">*</span></label>
+        <input type="password" id="gmail-pass" placeholder="xxxx xxxx xxxx xxxx"/></div>
+    </div>
+    <button class="btn btn-2" style="width:fit-content" onclick="testProv('gmail')">🔗 Tester Gmail</button>
+  </div>
+
+  <!-- Outlook -->
+  <div class="pp" id="pp-outlook">
+    <div class="ib info">
+      <span class="ib-ico">ℹ️</span>
+      <div>
+        Outlook personnel : <code>smtp-mail.outlook.com:587</code><br>
+        Office 365 / org : <code>smtp.office365.com:587</code>
+      </div>
+    </div>
+    <div class="g21">
+      <div><label class="lbl">Serveur SMTP <span class="req">*</span></label>
+        <input type="text" id="outlook-host" value="smtp-mail.outlook.com" placeholder="smtp.office365.com"/>
+        <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost" style="padding:3px 10px;font-size:11.5px" onclick="document.getElementById('outlook-host').value='smtp-mail.outlook.com'">Outlook</button>
+          <button class="btn btn-ghost" style="padding:3px 10px;font-size:11.5px" onclick="document.getElementById('outlook-host').value='smtp.office365.com'">Office365</button>
+        </div>
+      </div>
+      <div><label class="lbl">Port</label>
+        <select id="outlook-port">
+          <option value="587" selected>587 — STARTTLS</option>
+          <option value="993">993 — SSL</option>
+        </select></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Email <span class="req">*</span></label>
+        <input type="email" id="outlook-user" placeholder="vous@outlook.com"/></div>
+      <div><label class="lbl">Mot de passe <span class="req">*</span></label>
+        <input type="password" id="outlook-pass" placeholder="••••••••"/></div>
+    </div>
+    <div class="ib warn" style="font-size:12px">
+      <span class="ib-ico">⚠️</span>
+      <div>L'adresse <strong>De</strong> doit être identique au login — Outlook interdit d'envoyer depuis une autre adresse.</div>
+    </div>
+    <button class="btn btn-2" style="width:fit-content" onclick="testProv('outlook')">🔗 Tester Outlook</button>
+  </div>
+
+  <!-- AWS SES -->
+  <div class="pp" id="pp-ses">
+    <div class="ib ses">
+      <span class="ib-ico">☁️</span>
+      <div><strong>AWS SES</strong> — $0.10/1000 emails. Credentials SMTP depuis :
+        Console SES → <em>SMTP Settings → Create SMTP credentials</em><br>
+        <a href="https://console.aws.amazon.com/ses" target="_blank">Ouvrir la console SES →</a></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Région <span class="req">*</span></label>
+        <select id="ses-region" onchange="updSES()">
+          <option value="us-east-1">us-east-1 — N. Virginia</option>
+          <option value="us-east-2">us-east-2 — Ohio</option>
+          <option value="us-west-1">us-west-1 — N. California</option>
+          <option value="us-west-2">us-west-2 — Oregon</option>
+          <option value="eu-west-1">eu-west-1 — Ireland</option>
+          <option value="eu-west-2">eu-west-2 — London</option>
+          <option value="eu-central-1">eu-central-1 — Frankfurt</option>
+          <option value="eu-west-3">eu-west-3 — Paris</option>
+          <option value="eu-north-1">eu-north-1 — Stockholm</option>
+          <option value="ap-southeast-1">ap-southeast-1 — Singapore</option>
+          <option value="ap-southeast-2">ap-southeast-2 — Sydney</option>
+          <option value="ap-northeast-1">ap-northeast-1 — Tokyo</option>
+          <option value="ap-south-1">ap-south-1 — Mumbai</option>
+          <option value="ca-central-1">ca-central-1 — Canada</option>
+          <option value="sa-east-1">sa-east-1 — São Paulo</option>
+        </select></div>
+      <div><label class="lbl">Endpoint (auto)</label>
+        <input type="text" id="ses-endpoint" readonly value="email-smtp.us-east-1.amazonaws.com"/></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">SMTP Username <span class="req">*</span></label>
+        <input type="text" id="ses-user" placeholder="AKIAIOSFODNN7EXAMPLE" style="font-family:var(--mono);font-size:12px"/></div>
+      <div><label class="lbl">SMTP Password <span class="req">*</span></label>
+        <input type="password" id="ses-pass" placeholder="•••••••••••••••••••••••"/></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">Port</label>
+        <select id="ses-port">
+          <option value="587" selected>587 — STARTTLS</option>
+          <option value="465">465 — SSL/TLS</option>
+        </select></div>
+      <div><label class="lbl">Configuration Set</label>
+        <input type="text" id="ses-configset" placeholder="mon-config-set (optionnel)"/></div>
+    </div>
+    <button class="btn btn-ses" style="width:fit-content" onclick="testSES()">☁️ Tester SES</button>
+  </div>
+
+  <!-- SendGrid -->
+  <div class="pp" id="pp-sendgrid">
+    <div class="ib sg">
+      <span class="ib-ico">⚡</span>
+      <div><strong>SendGrid</strong> — 100 emails/jour gratuits, API directe sans backend.<br>
+        Créez une API Key : <a href="https://app.sendgrid.com/settings/api_keys" target="_blank">app.sendgrid.com/settings/api_keys</a></div>
+    </div>
+    <div class="g2">
+      <div><label class="lbl">API Key <span class="req">*</span></label>
+        <input type="password" id="sg-key" placeholder="SG.xxxxxxxxxxxxxxxx" style="font-family:var(--mono);font-size:12px"/></div>
+      <div><label class="lbl">Catégorie</label>
+        <input type="text" id="sg-cat" placeholder="newsletter"/></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label class="tog" for="sg-opens"><input type="checkbox" id="sg-opens" checked/><div class="tog-track"></div><span class="tog-lbl">Suivi ouvertures</span></label>
+      <label class="tog" for="sg-clicks"><input type="checkbox" id="sg-clicks" checked/><div class="tog-track"></div><span class="tog-lbl">Suivi clics</span></label>
+      <label class="tog" for="sg-unsub"><input type="checkbox" id="sg-unsub" checked/><div class="tog-track"></div><span class="tog-lbl">List-Unsubscribe auto</span></label>
+      <label class="tog" for="sg-sandbox"><input type="checkbox" id="sg-sandbox"/><div class="tog-track"></div><span class="tog-lbl">Mode sandbox (test sans envoi)</span></label>
+    </div>
+    <button class="btn btn-sg" style="width:fit-content" onclick="testSG()">⚡ Tester SendGrid</button>
+  </div>
+
+  <!-- Brevo -->
+  <div class="pp" id="pp-brevo">
+    <div class="ib bv">
+      <span class="ib-ico">💌</span>
+      <div><strong>Brevo</strong> — 300 emails/jour gratuits · Sans backend requis<br>
+        L'adresse expéditeur doit être vérifiée dans <a href="https://app.brevo.com/senders" target="_blank" style="color:#5eead4">Brevo → Expéditeurs</a></div>
+    </div>
+
+    <!-- Mode switcher -->
+    <div class="mode-sw" style="width:fit-content">
+      <button class="mode-btn on" id="bv-mode-api-btn" onclick="setBrevoMode('api')">🔑 Clé API</button>
+      <button class="mode-btn" id="bv-mode-smtp-btn" onclick="setBrevoMode('smtp')">📧 Email + MDP</button>
+    </div>
+
+    <!-- Mode API Key -->
+    <div id="bv-api-fields">
+      <label class="lbl">Clé API Brevo <span class="req">*</span></label>
+      <input type="password" id="brevo-apikey" placeholder="xkeysib-xxxxxxxxxxxxxxxx" style="font-family:var(--mono);font-size:12px"/>
+      <div class="hint">Commence par <code>xkeysib-</code> — <a href="https://app.brevo.com/settings/keys/api" target="_blank" style="color:var(--a2)">Obtenir ma clé API →</a></div>
+    </div>
+
+    <!-- Mode SMTP (email + mdp) -->
+    <div id="bv-smtp-fields" style="display:none;flex-direction:column;gap:12px">
+      <div class="ib bv" style="font-size:12px">
+        <span class="ib-ico">📋</span>
+        <div>Login SMTP : votre email Brevo · Mot de passe : clé SMTP (pas votre mdp de connexion)<br>
+          <a href="https://app.brevo.com/settings/keys/smtp" target="_blank" style="color:#5eead4">app.brevo.com → Paramètres → Clés SMTP & API</a></div>
+      </div>
+      <div class="g21">
+        <div><label class="lbl">Serveur SMTP</label>
+          <input type="text" id="brevo-host" value="smtp-relay.brevo.com" placeholder="smtp-relay.brevo.com"/>
+        </div>
+        <div><label class="lbl">Port</label>
+          <select id="brevo-port">
+            <option value="587" selected>587 — STARTTLS</option>
+            <option value="465">465 — SSL</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2">
+        <div><label class="lbl">Login SMTP <span class="req">*</span></label>
+          <input type="text" id="brevo-user" placeholder="A8dabf001@smtp-brevo.com" style="font-family:var(--mono);font-size:12px"/>
+          <div class="hint">Adresse spéciale Brevo (pas votre email habituel)</div>
+        </div>
+        <div><label class="lbl">Clé SMTP <span class="req">*</span></label>
+          <input type="password" id="brevo-pass" placeholder="xsmtpsib-xxxx…"/>
+          <div class="hint">Commence par <code>xsmtpsib-</code></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-bv" style="width:fit-content" onclick="testBrevoAuto()">💌 Tester Brevo</button>
+  </div>
+</div>
+
+<!-- ══ COMPOSE CARD ══ -->
+<div class="card">
+  <div class="card-hd">
+    <div class="card-hd-ico">✏️</div>
+    <div class="card-hd-title">Écrire l'email</div>
+    <div style="margin-left:auto;display:flex;gap:7px">
+      <button class="btn btn-ghost" onclick="openPreview()">👁 Aperçu</button>
+      <button class="btn btn-ghost" onclick="resetForm()">🗑 Effacer</button>
+    </div>
+  </div>
+
+  <div class="steps">
+    <!-- 1 DE -->
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-body">
+        <div class="step-title">De (expéditeur)</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input type="text" id="from-name" placeholder="Votre nom" style="flex:1;min-width:130px"/>
+          <input type="email" id="from-email" placeholder="votre@email.com" style="flex:2;min-width:190px"/>
+        </div>
+      </div>
+    </div>
+    <!-- 2 À -->
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-body">
+        <div class="step-title">À qui envoyer ?</div>
+        <div class="step-sub">Tapez un email + <kbd>Entrée</kbd></div>
+        <div class="tagbox" id="tagbox-to" onclick="focusGhost('to')">
+          <input class="ghost" id="ghost-to" placeholder="destinataire@email.com" data-field="to"/>
+        </div>
+        <div class="tagerr" id="tagerr-to"></div>
+        <div class="tagbox-info">
+          <span class="tagbox-count" id="to-count">0 destinataire(s)</span>
+          <div class="tagbox-actions">
+            <button class="tagbox-clear" onclick="clearField('to')" title="Supprimer tous">🗑 Tout effacer</button>
+            <button class="tagbox-clear" onclick="dedupField('to')" title="Supprimer les doublons">⊘ Dédupliquer</button>
+          </div>
+        </div>
+        <div class="import-row">
+          <label class="import-btn" for="txt-file-input">
+            📄 Importer .txt
+          </label>
+          <input type="file" id="txt-file-input" accept=".txt,.csv" style="display:none" onchange="importTxtFile(this)"/>
+          <span class="import-hint">Un email par ligne</span>
+          <span class="import-count" id="import-cnt" style="display:none"></span>
+        </div>
+        <button class="ccbcc-btn" id="ccbcc-btn" onclick="toggleCCBCC()">+ Ajouter CC / BCC</button>
+        <div id="ccbcc-fields" style="display:none;margin-top:12px">
+          <div class="g2">
+            <div>
+              <div class="step-sub" style="margin-bottom:5px">CC</div>
+              <div class="tagbox" id="tagbox-cc" onclick="focusGhost('cc')">
+                <input class="ghost" id="ghost-cc" placeholder="cc@email.com" data-field="cc"/>
+              </div>
+              <div class="tagerr" id="tagerr-cc"></div>
+            </div>
+            <div>
+              <div class="step-sub" style="margin-bottom:5px">BCC</div>
+              <div class="tagbox" id="tagbox-bcc" onclick="focusGhost('bcc')">
+                <input class="ghost" id="ghost-bcc" placeholder="bcc@email.com" data-field="bcc"/>
+              </div>
+              <div class="tagerr" id="tagerr-bcc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 3 OBJET -->
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-body">
+        <div class="step-title">Objet</div>
+        <input type="text" id="subject" placeholder="Objet de l'email" maxlength="998" oninput="updSubj()"/>
+        <div class="ffoot"><span class="cc" id="subj-cnt">0 / 998</span></div>
+      </div>
+    </div>
+    <!-- 3B SPIN + VARIABLES -->
+    <div class="step">
+      <div class="step-n" style="background:linear-gradient(135deg,#f59e0b,#d97706);font-size:11px">🔄</div>
+      <div class="step-body">
+        <button class="opts-btn" onclick="toggleSpinPanel()">
+          <span>Rotation · Variables · Blacklist</span>
+          <span class="opts-arrow" id="spin-arrow">▸</span>
+        </button>
+        <div id="spin-panel" style="display:none;margin-top:14px;display:none;flex-direction:column;gap:14px">
+
+          <!-- SPIN OBJET -->
+          <div>
+            <label class="lbl">Rotation objet <span style="color:var(--t3);text-transform:none;font-size:10px">{option1|option2|option3}</span></label>
+            <input type="text" id="spin-subject" placeholder="{Bonjour|Hello|Salut} — votre commande est {prête|disponible|confirmée}"/>
+            <div class="hint">Utilise { } avec | pour varier automatiquement le sujet à chaque email</div>
+          </div>
+
+          <!-- VARIABLES -->
+          <div>
+            <label class="lbl">Variables personnalisées</label>
+            <textarea id="spin-vars" style="min-height:70px;font-family:var(--mono);font-size:12px" placeholder="prenom=Jean,Marie,Pierre&#10;ville=Paris,Lyon,Marseille&#10;offre=20%,30%,50%"></textarea>
+            <div class="hint">Format : <code>nom=val1,val2,val3</code> — utilisez <code>{{prenom}}</code> dans le message · Une ligne par variable</div>
+          </div>
+
+          <!-- SPIN MESSAGE -->
+          <div>
+            <label class="lbl">Rotation dans le message</label>
+            <div class="hint" style="margin-bottom:0">
+              Utilisez <code>{texte1|texte2}</code> n'importe où dans le corps pour varier le contenu.<br>
+              Utilisez <code>{{email}}</code> pour insérer l'adresse du destinataire.<br>
+              Ex: <code>Bonjour {{prenom}}, profitez de {20%|30%} de réduction !</code>
+            </div>
+          </div>
+
+          <!-- BLACKLIST -->
+          <div>
+            <label class="lbl">Blacklist <span style="color:var(--t3);text-transform:none;font-size:10px">emails à exclure</span></label>
+            <textarea id="blacklist" style="min-height:65px;font-family:var(--mono);font-size:12px" placeholder="spam@example.com&#10;noreply@test.com&#10;ou importez un .txt"></textarea>
+            <div style="display:flex;gap:8px;margin-top:7px;align-items:center;flex-wrap:wrap">
+              <label class="import-btn" for="blacklist-file">📄 Importer .txt</label>
+              <input type="file" id="blacklist-file" accept=".txt" style="display:none" onchange="importBlacklist(this)"/>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 11px" onclick="applyBlacklist()">🚫 Appliquer</button>
+              <span id="bl-count" style="font-size:12px;color:var(--t3)"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 MESSAGE -->
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-body">
+        <!-- MODE SWITCHER : 3 modes -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:9px">
+          <div class="step-title" style="margin:0">Message</div>
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <label class="import-btn" for="body-file-input" title="Importer .txt ou .html">📄 Importer</label>
+            <input type="file" id="body-file-input" accept=".txt,.html,.htm" style="display:none" onchange="importBodyFile(this)"/>
+            <div class="mode-sw">
+              <button class="mode-btn on" id="mode-plain-btn" onclick="setBodyMode('plain')" title="Texte brut avec spin {a|b|c}">📝 Texte</button>
+              <button class="mode-btn" id="mode-html-btn" onclick="setBodyMode('html')" title="Éditeur HTML visuel">🎨 HTML</button>
+              <button class="mode-btn" id="mode-spin-btn" onclick="setBodyMode('spin')" title="Multi-lettres avec rotation complète">🔄 Spin</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODE PLAIN -->
+        <div id="plain-ed">
+          <textarea id="body-plain" placeholder="Bonjour {{prenom}},&#10;&#10;Votre message ici…&#10;&#10;Utilisez {option1|option2} pour varier." oninput="updBody()"></textarea>
+          <div class="ffoot"><span class="cc" id="body-cnt">0 caractères</span></div>
+        </div>
+
+        <!-- MODE HTML -->
+        <div id="html-ed" style="display:none">
+          <div class="editor-wrap">
+            <div class="editor-tb">
+              <button class="tb" onclick="fmt('bold')"><b>B</b></button>
+              <button class="tb" onclick="fmt('italic')"><i>I</i></button>
+              <button class="tb" onclick="fmt('underline')"><u>U</u></button>
+              <button class="tb" onclick="fmt('strikeThrough')"><s>S</s></button>
+              <div class="tb-sep"></div>
+              <button class="tb" onclick="fmt('insertUnorderedList')">• Liste</button>
+              <button class="tb" onclick="fmt('insertOrderedList')">1. Liste</button>
+              <div class="tb-sep"></div>
+              <button class="tb" onclick="insLink()">🔗 Lien</button>
+              <button class="tb" onclick="insImg()">🖼 Image</button>
+              <div class="tb-sep"></div>
+              <button class="tb" onclick="fmt('foreColor','#7c6fff')">🎨 Couleur</button>
+              <button class="tb" onclick="fmt('removeFormat')">⊘ Format</button>
+              <button class="tb" onclick="clearHtml()">🗑 Vider</button>
+            </div>
+            <div class="editor-area" id="body-html" contenteditable="true" data-ph="Composez votre email HTML ici…" oninput="updStats()"></div>
+          </div>
+          <div class="hint" style="margin-top:6px">Le HTML supporte aussi <code>{option1|option2}</code> et <code>{{prenom}}</code></div>
+        </div>
+
+        <!-- MODE SPIN — multi-lettres -->
+        <div id="spin-ed" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:12.5px;color:var(--t2);font-weight:500">Lettres alternatives — chaque email reçoit une lettre différente</div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 11px" onclick="addSpinLetter()">+ Lettre</button>
+          </div>
+          <div id="spin-letters-wrap" style="display:flex;flex-direction:column;gap:10px">
+            <!-- Letters added dynamically -->
+          </div>
+          <div class="ib info" style="margin-top:10px;font-size:12px">
+            <span class="ib-ico">💡</span>
+            <div>Ajoutez plusieurs lettres complètes — chaque destinataire reçoit une lettre au hasard.<br>
+            Combinez avec <code>{option1|option2}</code> dans chaque lettre pour une rotation maximale.</div>
+          </div>
+        </div>
+
+        <input type="checkbox" id="html-mode" style="display:none"/>
+      </div>
+    </div>
+    <!-- 5 FICHIERS -->
+    <div class="step">
+      <div class="step-n">5</div>
+      <div class="step-body">
+        <div class="step-title">Pièces jointes <span style="color:var(--t3);font-weight:400;font-size:12px">(optionnel)</span></div>
+        <div class="dz" id="dropzone">
+          <input type="file" id="file-input" multiple onchange="handleFiles(this.files)"/>
+          <div style="font-size:26px;opacity:.35;margin-bottom:7px">📎</div>
+          <div style="font-size:13px;color:var(--t2);font-weight:500">Glissez vos fichiers ici ou cliquez</div>
+          <div style="font-size:11.5px;color:var(--t3);margin-top:3px">Max 25 Mo par fichier</div>
+        </div>
+        <div class="flist" id="flist"></div>
+        <div style="font-size:12px;color:var(--t3);margin-top:6px" id="ftotal">Aucun fichier joint</div>
+      </div>
+    </div>
+    <!-- 6 OPTIONS -->
+    <div class="step">
+      <div class="step-n opt">⚙</div>
+      <div class="step-body">
+        <button class="opts-btn" onclick="toggleOpts()">
+          <span id="opts-txt">Options avancées</span>
+          <span class="opts-arrow" id="opts-arrow">▸</span>
+        </button>
+        <div id="opts-fields" style="display:none;margin-top:14px;display:none">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="g2">
+              <div><label class="lbl">Reply-To</label>
+                <input type="email" id="reply-to" placeholder="reponse@email.com"/></div>
+              <div><label class="lbl">Priorité</label>
+                <select id="priority">
+                  <option value="normal" selected>Normale</option>
+                  <option value="high">🔴 Haute</option>
+                  <option value="low">🔵 Basse</option>
+                </select></div>
+            </div>
+            <div>
+              <label class="lbl">En-têtes personnalisés</label>
+              <textarea id="custom-hdrs" style="min-height:65px;font-family:var(--mono);font-size:12px" placeholder="List-Unsubscribe: &lt;mailto:unsub@domaine.com&gt;"></textarea>
+            </div>
+            <label class="tog" for="opt-receipt">
+              <input type="checkbox" id="opt-receipt"/>
+              <div class="tog-track"></div>
+              <span class="tog-lbl">Demander un accusé de lecture</span>
+            </label>
+            <label class="tog" for="opt-delay">
+              <input type="checkbox" id="opt-delay" onchange="togDelay()"/>
+              <div class="tog-track"></div>
+              <span class="tog-lbl">Programmer l'envoi pour plus tard</span>
+            </label>
+            <div id="delay-fld" style="display:none;padding-left:47px">
+              <input type="datetime-local" id="delay-dt" style="width:auto"/>
+            </div>
+            <label class="tog" for="opt-bulk">
+              <input type="checkbox" id="opt-bulk" onchange="togBulk()"/>
+              <div class="tog-track"></div>
+              <span class="tog-lbl">Envoi en masse (1 email par destinataire)</span>
+            </label>
+            <div id="bulk-fld" style="display:none;padding-left:47px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="font-size:13px;color:var(--t2)">Délai :</span>
+                <input type="number" id="bulk-delay" value="200" min="0" max="10000" style="width:90px"/>
+                <span style="font-size:12px;color:var(--t3)">ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE STATS -->
+  <div class="live-stats" id="live-stats" style="display:none">
+    <div class="ls-item"><div class="ls-val ls-ok" id="ls-sent">0</div><div class="ls-lbl">Envoyés</div></div>
+    <div class="ls-item"><div class="ls-val ls-err" id="ls-failed">0</div><div class="ls-lbl">Échecs</div></div>
+    <div class="ls-item"><div class="ls-val ls-rate" id="ls-rate">0/s</div><div class="ls-lbl">Débit</div></div>
+    <div class="ls-item"><div class="ls-val" id="ls-eta">—</div><div class="ls-lbl">Restant</div></div>
+    <div class="ls-item"><div class="ls-val" id="ls-total">0</div><div class="ls-lbl">Total</div></div>
+    <div class="ls-item" style="margin-left:auto"><div class="ls-val" id="ls-pct" style="color:var(--y)">0%</div><div class="ls-lbl">Progression</div></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress" id="progress-wrap">
+    <div class="pb-bar-bg"><div class="pb-bar-fill" id="pb-fill"></div></div>
+    <div class="pb-info">
+      <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2)">
+        <span class="pb-ok" id="bp-ok">0</span> envoyés
+        <span id="bp-err" style="display:none;color:var(--r)"> · <span id="bp-err-n">0</span> échecs</span>
+      </div>
+      <span class="pb-pct" id="bp-pct">0%</span>
+      <span class="pb-eta" id="bp-eta">—</span>
+      <button class="pb-btn" id="bp-pause-btn" onclick="togglePause()">⏸ Pause</button>
+      <button class="pb-btn" onclick="stopBulk()">⏹ Stop</button>
+    </div>
+  </div>
+
+  <!-- SEND FOOTER -->
+  <div class="sfooter">
+    <div class="sfooter-info">
+      <span class="sfooter-prov" id="st-prov">SMTP</span>
+      À : <strong id="st-to" style="color:var(--t2)">0</strong>
+      CC : <strong id="st-cc" style="color:var(--t2)">0</strong>
+      BCC : <strong id="st-bcc" style="color:var(--t2)">0</strong>
+      · <span id="st-sz">0 o</span>
+      · <span id="st-status">En attente</span>
+    </div>
+    <div class="sfooter-actions">
+      <button class="btn btn-2" onclick="saveDraft()">💾 Brouillon</button>
+      <button class="btn btn-send" id="send-btn" onclick="sendEmail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        Envoyer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ANTI-SPAM CHECK ══ -->
+<div class="card" id="aspam-card">
+  <div class="card-hd">
+    <div class="card-hd-ico">🔬</div>
+    <div class="card-hd-title">Anti-Spam Check</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <div id="aspam-score-wrap" style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:10px;color:var(--t3);letter-spacing:.5px">SPAM SCORE</div>
+        <div id="aspam-score" style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--g);line-height:1">--</div>
+      </div>
+      <button class="btn btn-2" onclick="runAntiSpam()" style="font-size:12.5px">🔬 Analyser</button>
+    </div>
+  </div>
+  <div id="aspam-body" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:12.5px;color:var(--t3)">Cliquez <strong style="color:var(--t2)">Analyser</strong> pour vérifier votre email avant envoi</div>
+  </div>
+</div>
+
+<!-- ══ DELIVERABILITY ══ -->
+<div class="card">
+  <div class="card-hd">
+    <div class="card-hd-ico">🛡️</div>
+    <div class="card-hd-title">Score Inbox & Délivrabilité</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--t3);letter-spacing:.5px;margin-bottom:1px">SCORE</div>
+        <div id="global-score" style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--y);line-height:1">--</div>
+      </div>
+      <button class="btn btn-2" onclick="analyze()" style="font-size:12.5px">🔍 Analyser</button>
+    </div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px">
+        <span style="color:var(--t2)">Score de délivrabilité</span>
+        <span id="score-lbl" style="color:var(--t3)">Cliquez Analyser</span>
+      </div>
+      <div class="score-wrap"><div class="score-fill sf-y" id="score-bar" style="width:0%"></div></div>
+    </div>
+    <div class="deliv-grid">
+      <div class="dcard"><div class="dcard-hd"><span>🛡️</span><span class="dcard-name">SPF</span><span class="dbadge db-warn" id="badge-spf">--</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Autorise vos serveurs à envoyer pour votre domaine.</div>
+        <div class="dst dst-na" id="dst-spf">⬜ Non analysé</div>
+        <div class="dcode" onclick="cpCode(this)">v=spf1 include:_spf.google.com include:sendgrid.net ~all</div></div>
+      <div class="dcard"><div class="dcard-hd"><span>🔑</span><span class="dcard-name">DKIM</span><span class="dbadge db-warn" id="badge-dkim">--</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Signature cryptographique. Obligatoire envois en masse 2024.</div>
+        <div class="dst dst-na" id="dst-dkim">⬜ Non analysé</div>
+        <div class="dcode" onclick="cpCode(this)">default._domainkey  TXT  "v=DKIM1; k=rsa; p=..."</div></div>
+      <div class="dcard"><div class="dcard-hd"><span>🔒</span><span class="dcard-name">DMARC</span><span class="dbadge db-warn" id="badge-dmarc">--</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Politique si SPF/DKIM échouent. Obligatoire envois en masse.</div>
+        <div class="dst dst-na" id="dst-dmarc">⬜ Non analysé</div>
+        <div class="dcode" onclick="cpCode(this)">_dmarc  TXT  "v=DMARC1; p=quarantine; rua=mailto:dmarc@domaine.com"</div></div>
+      <div class="dcard"><div class="dcard-hd"><span>🚪</span><span class="dcard-name">Unsubscribe</span><span class="dbadge db-warn" id="badge-unsub">--</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Désabonnement 1 clic. Obligatoire envois en masse Google/Yahoo.</div>
+        <div class="dst dst-na" id="dst-unsub">⬜ Non configuré</div>
+        <div class="dcode" onclick="cpCode(this)">List-Unsubscribe: &lt;https://site.com/unsub&gt;
+List-Unsubscribe-Post: List-Unsubscribe=One-Click</div></div>
+      <div class="dcard"><div class="dcard-hd"><span>↩️</span><span class="dcard-name">PTR / rDNS</span><span class="dbadge db-warn" id="badge-ptr">--</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Reverse DNS de l'IP SMTP. SES et SendGrid gèrent automatiquement.</div>
+        <div class="dst dst-na" id="dst-ptr">⬜ Non vérifié</div></div>
+      <div class="dcard"><div class="dcard-hd"><span>🖼️</span><span class="dcard-name">BIMI</span><span class="dbadge db-na" id="badge-bimi">opt.</span></div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Logo dans Gmail/Yahoo. Requiert DMARC p=reject.</div>
+        <div class="dst dst-na" id="dst-bimi">⬜ Optionnel</div></div>
+    </div>
+    <div>
+      <div class="stitle">📋 Bonnes pratiques</div>
+      <div class="prac-grid">
+        <div class="prac-item">✅ <div><strong>Objet :</strong> 30–50 car., évitez CAPS et "Gratuit !!"</div></div>
+        <div class="prac-item">✅ <div><strong>Ratio :</strong> Min 60% texte visible vs HTML</div></div>
+        <div class="prac-item">✅ <div><strong>Warm-up IP :</strong> 50/jour → doublez chaque semaine</div></div>
+        <div class="prac-item">✅ <div><strong>Bounces :</strong> Supprimez immédiatement, taux &lt; 2%</div></div>
+        <div class="prac-item">✅ <div><strong>Plaintes :</strong> &lt; 0.08% Gmail · &lt; 0.3% Yahoo</div></div>
+        <div class="prac-item">✅ <div><strong>Double opt-in :</strong> Confirmation email réducteur de plaintes</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="stitle">🔧 Outils de test</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <a href="https://www.mail-tester.com" target="_blank" class="btn btn-2" style="font-size:12px">mail-tester.com</a>
+        <a href="https://mxtoolbox.com/SuperTool.aspx" target="_blank" class="btn btn-2" style="font-size:12px">MXToolbox</a>
+        <a href="https://dmarcian.com/dmarc-inspector/" target="_blank" class="btn btn-2" style="font-size:12px">DMARC Inspector</a>
+        <a href="https://www.spamcheck.postmarkapp.com" target="_blank" class="btn btn-2" style="font-size:12px">Spamcheck</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="logpanel" id="logpanel">
+  <div class="log-hd">
+    <div class="log-title"><span class="log-dot"></span>JOURNAL</div>
+    <button class="btn btn-ghost" style="font-size:12px;padding:5px 11px" onclick="clearLog()">Effacer</button>
+  </div>
+  <div class="log-body" id="log-body"></div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- PREVIEW MODAL -->
+<div class="overlay" id="preview-overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">👁 Aperçu email</div>
+      <button class="modal-x" onclick="closePreview()">✕</button>
+    </div>
+    <div class="modal-body" id="preview-content"></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+
+"use strict";
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+const APP = {
+  prov: 'smtp',
+  tags: { to:[], cc:[], bcc:[] },
+  files: [],
+  sending: false,
+  drafts: []
+};
+try { APP.drafts = JSON.parse(localStorage.getItem('m666_drafts') || '[]'); } catch(e) {}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  initTags();
+  initDrop();
+  loadConf();
+  updStats();
+
+  document.getElementById('preview-overlay').addEventListener('click', e => {
+    if (e.target.id === 'preview-overlay') closePreview();
+  });
+  document.getElementById('body-html').addEventListener('blur', () => {
+    const ed = document.getElementById('body-html');
+    if (ed.innerHTML === '<br>') ed.innerHTML = '';
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePreview();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !APP.sending) sendEmail();
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// PROVIDER
+// ══════════════════════════════════════════════════════════════════
+function setProv(p) {
+  APP.prov = p;
+  // Buttons: .pt class (new HTML) or .pb class (old)
+  document.querySelectorAll('.pt, .pb').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.pt, .pb').forEach(b => {
+    const oc = b.getAttribute('onclick') || '';
+    if (oc.includes("'" + p + "'") || oc.includes('"' + p + '"')) b.classList.add('on');
+  });
+  // Panels: pp-* (new) or prov-* (old)
+  document.querySelectorAll('.pp, .prov-pnl').forEach(x => x.classList.remove('on'));
+  const panel = document.getElementById('pp-' + p) || document.getElementById('prov-' + p);
+  if (panel) panel.classList.add('on');
+  // Stat badge
+  const badge = document.getElementById('st-prov');
+  if (badge) badge.textContent = p.toUpperCase();
+  toast(p.toUpperCase() + ' sélectionné', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SMTP PRESETS
+// ══════════════════════════════════════════════════════════════════
+const PRESETS = {
+  gmail:    { host:'smtp.gmail.com',                         port:'587', sec:'STARTTLS' },
+  outlook:  { host:'smtp-mail.outlook.com',                  port:'587', sec:'STARTTLS' },
+  yahoo:    { host:'smtp.mail.yahoo.com',                    port:'587', sec:'STARTTLS' },
+  ses:      { host:'email-smtp.us-east-1.amazonaws.com',     port:'587', sec:'STARTTLS' },
+  sendgrid: { host:'smtp.sendgrid.net',                      port:'587', sec:'STARTTLS' },
+};
+function loadPreset(n) {
+  const p = PRESETS[n]; if (!p) return;
+  document.getElementById('smtp-host').value = p.host;
+  document.getElementById('smtp-port').value = p.port;
+  document.getElementById('smtp-sec').value  = p.sec;
+  toast('Preset ' + n + ' chargé', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AWS SES
+// ══════════════════════════════════════════════════════════════════
+function updateSESEndpoint() {
+  const r = document.getElementById('ses-region');
+  const ep = document.getElementById('ses-endpoint');
+  if (r && ep) ep.value = 'email-smtp.' + r.value + '.amazonaws.com';
+}
+// Alias called by onchange
+function updSES() { updateSESEndpoint(); }
+
+async function testSES() {
+  // Appel RÉEL au backend
+  await testProviderBackend('ses');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SENDGRID — REAL API CALL (works directly from browser)
+// ══════════════════════════════════════════════════════════════════
+function toggleSGMode() {
+  const _sgNote = document.getElementById('sg-smtp-note'); const _sgMode = document.getElementById('sg-mode'); if(_sgNote && _sgMode) _sgNote.style.display = _sgMode.value === 'smtp' ? 'block' : 'none';
+}
+
+async function testSG() {
+  const key = v('sg-key');
+  if (!key) { toast('Entrez votre API Key SendGrid', 'error'); return; }
+  if (!key.startsWith('SG.')) { toast('L\'API Key doit commencer par "SG."', 'error'); return; }
+  showLog();
+  log('=== TEST SENDGRID API v3 ===', 'info');
+  log('Clé : SG.' + key.slice(3, 12) + '… (masquée)', 'info');
+  await wait(300);
+  try {
+    const res = await fetch('https://api.sendgrid.com/v3/user/profile', {
+      headers: { 'Authorization': 'Bearer ' + key }
+    });
+    if (res.ok) {
+      const d = await res.json();
+      log('✓ API Key valide — utilisateur : ' + (d.username || d.email || 'OK'), 'ok');
+      log('→ Clé prête pour envoi', 'info');
+      toast('SendGrid connecté ✓', 'success');
+    } else if (res.status === 401) {
+      log('✗ API Key invalide ou révoquée (401)', 'err');
+      toast('API Key invalide', 'error');
+    } else if (res.status === 403) {
+      log('✗ Permission insuffisante (403) — vérifiez que la clé a la permission "Mail Send"', 'err');
+      toast('Permission Mail Send manquante', 'error');
+    } else {
+      log('Réponse inattendue : HTTP ' + res.status, 'warn');
+      toast('Vérifiez la clé API', 'warn');
+    }
+  } catch(e) {
+    log('Format valide (CORS depuis navigateur — normal)', 'warn');
+    log('→ Testez directement avec un envoi', 'info');
+    toast('Format valide', 'info');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SMTP / GMAIL / OUTLOOK TEST
+// ══════════════════════════════════════════════════════════════════
+async function testSMTP() {
+  // Appel RÉEL au backend
+  await testProviderBackend('smtp');
+}
+
+// ── BREVO API v3 ─────────────────────────────────────────────────
+const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
+
+async function testBrevoAPI() {
+  const key = v('brevo-apikey');
+  if (!key) { toast('Entrez votre clé API Brevo', 'error'); return; }
+  if (!key.startsWith('xkeysib-')) { toast('Clé invalide — doit commencer par xkeysib-', 'error'); return; }
+  showLog();
+  log('=== TEST API BREVO v3 ===', 'info');
+  log('Clé : ' + key.slice(0,16) + '… (' + key.length + ' chars)', 'info');
+  try {
+    const r = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': key, 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (r.ok) {
+      const d = await r.json();
+      log('✓ Clé valide — compte : ' + (d.email || d.companyName || 'OK'), 'ok');
+      log('Plan : ' + (d.plan?.[0]?.type || 'inconnu'), 'info');
+      toast('Brevo connecté ✓', 'success');
+    } else if (r.status === 401) {
+      log('✗ Clé API invalide ou révoquée (401)', 'err');
+      toast('Clé API invalide', 'error');
+    } else {
+      log('Réponse HTTP ' + r.status, 'warn');
+    }
+  } catch(e) {
+    log('Erreur : ' + e.message, 'err');
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+async function sendBrevoAPI(to, fromEmail, fromName, subject, htmlBody, textBody, replyTo) {
+  const key = v('brevo-apikey');
+  const payload = {
+    sender: { name: fromName || fromEmail, email: fromEmail },
+    to:     [{ email: to }],
+    subject,
+    htmlContent: htmlBody || '<p>' + (textBody||'').replace(/\n/g,'<br>') + '</p>',
+    textContent: textBody || '',
+  };
+  if (replyTo) payload.replyTo = { email: replyTo };
+
+  const r = await fetch(BREVO_API, {
+    method:  'POST',
+    headers: { 'api-key': key, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body:    JSON.stringify(payload),
+    signal:  AbortSignal.timeout(30000),
+  });
+
+  if (r.status === 201 || r.status === 200 || r.status === 202) return { ok: true };
+  let msg = 'HTTP ' + r.status;
+  try { const d = await r.json(); msg = d.message || JSON.stringify(d); } catch(e) {}
+  return { ok: false, msg };
+}
+
+async function testProv(prov) {
+  await testProviderBackend(prov);
+}
+
+// Test Brevo avec AUTH PLAIN direct (bypass nodemailer)
+async function testBrevoRaw() {
+  if (!backendOnline) {
+    toast('Backend offline — lancez node server.js', 'error'); return;
+  }
+  const host = v('brevo-host') || 'smtp-relay.brevo.com';
+  const port = v('brevo-port') || '587';
+  const user = v('brevo-user');
+  const pass = v('brevo-pass');
+  if (!user || !pass) { toast('Entrez le login et la clé SMTP Brevo', 'error'); return; }
+
+  showLog();
+  log('=== TEST BREVO RAW (AUTH PLAIN) ===', 'info');
+  log('Host: ' + host + ':' + port, 'info');
+  log('User: ' + user, 'info');
+  log('Pass: ' + pass.slice(0,12) + '… (' + pass.length + ' chars)', 'info');
+
+  try {
+    const r = await fetch(BACKEND + '/brevo-raw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host, port, user, pass }),
+      signal: AbortSignal.timeout(20000),
+    });
+    const d = await r.json();
+    if (d.lines) d.lines.forEach(l => {
+      const type = l.includes('✓') ? 'ok' : l.includes('✗') || l.includes('ERR') ? 'err' : 'info';
+      log(l, type);
+    });
+    if (d.ok) {
+      toast('Brevo authentifié ✓', 'success');
+    } else {
+      toast('Échec : ' + d.msg, 'error');
+      if (d.hint) log('💡 ' + d.hint, 'warn');
+    }
+  } catch(e) {
+    log('Erreur réseau : ' + e.message, 'err');
+    toast('Erreur : ' + e.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CONFIG SAVE/LOAD
+// ══════════════════════════════════════════════════════════════════
+function saveConf() {
+  if (!document.getElementById('smtp-save').checked) {
+    try { localStorage.removeItem('m666_cfg'); } catch(e) {}
+    return;
+  }
+  const c = { host:v('smtp-host'), port:v('smtp-port'), sec:v('smtp-sec'), user:v('smtp-user'), prov:APP.prov };
+  try { localStorage.setItem('m666_cfg', JSON.stringify(c)); } catch(e) {}
+  toast('Config mémorisée (sans mot de passe)', 'info');
+}
+
+function loadConf() {
+  try {
+    const c = JSON.parse(localStorage.getItem('m666_cfg') || 'null');
+    if (!c) return;
+    if (c.host) document.getElementById('smtp-host').value = c.host;
+    if (c.port) document.getElementById('smtp-port').value = c.port;
+    if (c.sec)  document.getElementById('smtp-sec').value  = c.sec;
+    if (c.user) document.getElementById('smtp-user').value = c.user;
+    if (c.prov) {
+      setProv(c.prov); // use unified setProv which handles all selector variants
+    }
+    document.getElementById('smtp-save').checked = true;
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COMPOSE TABS (SCOPED — BUG FIX)
+// ══════════════════════════════════════════════════════════════════
+function initTabs() {
+  // compose-tabs no longer exists in new HTML — no-op
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TAG INPUTS (XSS-SAFE, STALE CLOSURE FIX)
+// ══════════════════════════════════════════════════════════════════
+function initTags() {
+  ['to','cc','bcc'].forEach(field => {
+    const inp = document.getElementById('ghost-' + field);
+    if (!inp) return; // safe — element might not exist
+    inp.addEventListener('keydown', e => {
+      if (['Enter','Tab',',',';'].includes(e.key)) {
+        e.preventDefault();
+        addTag(field, inp.value.trim());
+      }
+      // BUG FIX: Backspace on empty input removes last chip
+      if (e.key === 'Backspace' && inp.value === '' && APP.tags[field].length > 0) {
+        removeTag(field, APP.tags[field].length - 1);
+      }
+    });
+    inp.addEventListener('blur', () => { if (inp.value.trim()) addTag(field, inp.value.trim()); });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      e.clipboardData.getData('text')
+        .split(/[,;\n\r\t]+/).map(s => s.trim()).filter(Boolean)
+        .forEach(em => addTag(field, em));
+    });
+  });
+}
+
+function focusGhost(f) { document.getElementById('ghost-' + f).focus(); }
+
+function isEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s); }
+
+function addTag(field, val) {
+  if (!val) return;
+  document.getElementById('ghost-' + field).value = '';
+  if (!isEmail(val)) { showTagErr(field, '"' + val + '" — email invalide'); return; }
+  if (APP.tags[field].includes(val)) { showTagErr(field, 'Déjà dans la liste'); return; }
+  APP.tags[field].push(val);
+  renderTags(field);
+  updStats();
+  if (field === 'to') updateToCount();
+}
+
+function removeTag(field, idx) {
+  APP.tags[field].splice(idx, 1);
+  renderTags(field);
+  updStats();
+  if (field === 'to') updateToCount();
+}
+
+// BUG FIX: uses closure-captured index via data attribute, not stale closure
+function renderTags(field) {
+  const box   = document.getElementById('tagbox-' + field);
+  const ghost = document.getElementById('ghost-' + field);
+  box.querySelectorAll('.chip').forEach(c => c.remove());
+
+  APP.tags[field].forEach((email, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.dataset.idx = i;
+
+    const lbl = document.createElement('span');
+    lbl.textContent = email;   // SAFE — no innerHTML
+    chip.appendChild(lbl);
+
+    const x = document.createElement('span');
+    x.className = 'chip-x';
+    x.textContent = '×';
+    x.title = 'Supprimer';
+    // BUG FIX: capture current i value correctly
+    ;(function(capturedField, capturedIdx) {
+      x.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeTag(capturedField, capturedIdx);
+      });
+    })(field, i);
+    chip.appendChild(x);
+    box.insertBefore(chip, ghost);
+  });
+}
+
+function showTagErr(field, msg) {
+  const el = document.getElementById('tagerr-' + field);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HTML EDITOR
+// ══════════════════════════════════════════════════════════════════
+function togHtml() {
+  const on = document.getElementById('html-mode').checked;
+  document.getElementById('plain-ed').style.display  = on ? 'none' : 'block';
+  document.getElementById('html-ed').style.display   = on ? 'block' : 'none';
+  if (on) {
+    // BUG FIX: escape plain text before injecting as HTML
+    const plain = document.getElementById('body-plain').value;
+    const escaped = plain
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+    document.getElementById('body-html').innerHTML = escaped;
+    document.getElementById('body-html').focus();
+  } else {
+    document.getElementById('body-plain').value = document.getElementById('body-html').innerText;
+    updBody();
+  }
+}
+
+function fmt(cmd, val) {
+  document.getElementById('body-html').focus();
+  document.execCommand(cmd, false, val || null);
+}
+function insLink() { const u=prompt('URL:','https://'); if(u&&u!=='https://') fmt('createLink',u); }
+function insImg()  { const u=prompt('URL image:','https://'); if(u&&u!=='https://') fmt('insertImage',u); }
+function clearHtml() { document.getElementById('body-html').innerHTML=''; }
+
+// ══════════════════════════════════════════════════════════════════
+// FILES (BUG FIX: reset input value so same file can be re-added)
+// ══════════════════════════════════════════════════════════════════
+const MAX_F = 25 * 1024 * 1024;
+
+function initDrop() {
+  const z = document.getElementById('dropzone');
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+  z.addEventListener('dragleave', () => z.classList.remove('drag'));
+  z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+}
+
+function handleFiles(list) {
+  Array.from(list).forEach(f => {
+    if (f.size > MAX_F) { toast('"'+f.name+'" dépasse 25 Mo', 'error'); return; }
+    if (APP.files.some(x => x.name===f.name && x.size===f.size)) { toast('Déjà ajouté', 'info'); return; }
+    APP.files.push(f);
+    log('PJ : ' + f.name + ' (' + fmtB(f.size) + ')', 'info');
+  });
+  // BUG FIX: reset file input so same file can be selected again
+  const inp = document.getElementById('file-input');
+  inp.value = '';
+  renderFiles(); updStats();
+}
+
+function rmFile(i) { APP.files.splice(i,1); renderFiles(); updStats(); }
+
+function renderFiles() {
+  const list = document.getElementById('flist'); list.innerHTML=''; let tot=0;
+  APP.files.forEach((f,i) => {
+    tot += f.size;
+    const item = document.createElement('div'); item.className='fitem';
+    const ico  = document.createElement('span'); ico.className='fitem-ico'; ico.textContent=fEmoji(f.name);
+    const name = document.createElement('span'); name.className='fitem-name'; name.textContent=f.name; name.title=f.name;
+    const size = document.createElement('span'); size.className='fitem-size'; size.textContent=fmtB(f.size);
+    const rm   = document.createElement('span'); rm.className='fitem-rm'; rm.textContent='×'; rm.title='Supprimer';
+    ;(function(idx){ rm.addEventListener('click', () => rmFile(idx)); })(i);
+    item.append(ico,name,size,rm); list.appendChild(item);
+  });
+  document.getElementById('ftotal').textContent = APP.files.length===0
+    ? 'Aucun fichier joint'
+    : APP.files.length+' fichier(s) — '+fmtB(tot)+' total';
+}
+
+function fEmoji(n) {
+  const e=n.split('.').pop().toLowerCase();
+  return ({pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',ppt:'📊',pptx:'📊',
+    png:'🖼️',jpg:'🖼️',jpeg:'🖼️',gif:'🖼️',svg:'🖼️',webp:'🖼️',
+    zip:'📦',rar:'📦',tar:'📦',gz:'📦',mp4:'🎬',mp3:'🎵',wav:'🎵',
+    csv:'📊',txt:'📃',json:'📋',xml:'📋',html:'🌐',css:'🎨',js:'⚙️',py:'🐍'})[e]||'📎';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COUNTERS
+// ══════════════════════════════════════════════════════════════════
+function updSubj() {
+  const l=document.getElementById('subject').value.length;
+  const el=document.getElementById('subj-cnt');
+  el.textContent=l+' / 998';
+  el.className='ccount'+(l>900?' yw':'')+(l>=998?' rd':'');
+}
+function updBody() {
+  const l=document.getElementById('body-plain').value.length;
+  document.getElementById('body-cnt').textContent=l.toLocaleString('fr-FR')+' caractères';
+}
+function updStats() {
+  const to  = APP.tags.to.length;
+  const cc  = APP.tags.cc.length;
+  const bcc = APP.tags.bcc.length;
+  const $ = id => document.getElementById(id);
+  if ($('st-to'))  $('st-to').textContent  = to;
+  if ($('st-cc'))  $('st-cc').textContent  = cc;
+  if ($('st-bcc')) $('st-bcc').textContent = bcc;
+  const hmEl = $('html-mode');
+  const blen = hmEl && hmEl.checked
+    ? ($('body-html') ? $('body-html').innerHTML.length : 0)
+    : ($('body-plain') ? $('body-plain').value.length : 0);
+  const fbytes = APP.files.reduce((a,f)=>a+f.size,0);
+  if ($('st-sz')) $('st-sz').textContent = fmtB(blen+fbytes);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOGGLE HELPERS
+// ══════════════════════════════════════════════════════════════════
+function togDelay() {
+  const on=document.getElementById('opt-delay').checked;
+  document.getElementById('delay-fld').style.display=on?'block':'none';
+  if(on){const d=new Date(Date.now()+3600000);document.getElementById('delay-dt').value=d.toISOString().slice(0,16);}
+}
+function togBulk() {
+  document.getElementById('bulk-fld').style.display=document.getElementById('opt-bulk').checked?'block':'none';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VALIDATION
+// ══════════════════════════════════════════════════════════════════
+function validate() {
+  const errs=[], p=APP.prov;
+  if (p==='smtp') {
+    if(!v('smtp-host')) errs.push('Serveur SMTP requis');
+    if(!v('smtp-user')) errs.push('Login SMTP requis');
+    if(!v('smtp-pass')) errs.push('Mot de passe SMTP requis');
+  }
+  if (p==='gmail') {
+    if(!v('gmail-user')) errs.push('Adresse Gmail requise');
+    if(!v('gmail-pass')) errs.push('App Password Gmail requis');
+  }
+  if (p==='outlook') {
+    if(!v('outlook-user')) errs.push('Email Outlook requis');
+    if(!v('outlook-pass')) errs.push('Mot de passe Outlook requis');
+  }
+  if (p==='ses') {
+    if(!v('ses-user')) errs.push('SES SMTP Username requis');
+    if(!v('ses-pass')) errs.push('SES SMTP Password requis');
+  }
+  if (p==='brevo') {
+    if ((window.BREVO_MODE || 'api') === 'api') {
+      const bk = v('brevo-apikey');
+      if (!bk) errs.push('Clé API Brevo requise');
+      else if (!bk.startsWith('xkeysib-')) errs.push('Clé API invalide — doit commencer par "xkeysib-"');
+    } else {
+      if (!v('brevo-user')) errs.push('Login SMTP Brevo requis');
+      if (!v('brevo-pass')) errs.push('Clé SMTP Brevo requise');
+    }
+  }
+  if (p==='sendgrid') {
+    const k=v('sg-key');
+    if(!k) errs.push('API Key SendGrid requise');
+    else if(!k.startsWith('SG.')) errs.push('API Key invalide — doit commencer par "SG."');
+  }
+  if(APP.tags.to.length===0) errs.push('Au moins un destinataire requis');
+  const fe=v('from-email');
+  if(!fe) errs.push('Email expéditeur requis');
+  else if(!isEmail(fe)) errs.push('Email expéditeur invalide');
+  if(!v('subject')) errs.push('Objet requis');
+  const body=document.getElementById('html-mode').checked
+    ?document.getElementById('body-html').innerText.trim()
+    :document.getElementById('body-plain').value.trim();
+  if(!body) errs.push('Corps du message requis');
+  return errs;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SEND — REAL IMPLEMENTATIONS
+// ══════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════
+// BACKEND CONFIG
+// ══════════════════════════════════════════════════════════════════
+let BACKEND = localStorage.getItem('m666_backend') || 'http://127.0.0.1:2666';
+let backendOnline = false;
+
+async function checkBackend() {
+  const badge = document.getElementById('backend-status');
+  const label = document.getElementById('backend-label');
+  badge.className = 'backend-badge checking';
+  label.textContent = 'Vérification…';
+  try {
+    const r = await fetch(BACKEND + '/ping', { signal: AbortSignal.timeout(3000) });
+    const d = await r.json();
+    if (d.ok) {
+      backendOnline = true;
+      badge.className = 'backend-badge online';
+      label.textContent = 'Backend connecté';
+      toast('Backend Mucho666 connecté ✓', 'success');
+    } else throw new Error('not ok');
+  } catch(e) {
+    backendOnline = false;
+    badge.className = 'backend-badge offline';
+    label.textContent = 'Backend offline';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BULK STATE
+// ══════════════════════════════════════════════════════════════════
+const BULK = {
+  paused:   false,
+  stopped:  false,
+  sent:     0,
+  failed:   0,
+  retried:  0,
+  total:    0,
+  startAt:  0,
+};
+
+function resetBulk() {
+  BULK.paused  = false;
+  BULK.stopped = false;
+  BULK.sent    = 0;
+  BULK.failed  = 0;
+  BULK.retried = 0;
+  BULK.total   = 0;
+  BULK.startAt = Date.now();
+}
+
+function togglePause() {
+  BULK.paused = !BULK.paused;
+  const btn = document.getElementById('bp-pause-btn');
+  btn.textContent = BULK.paused ? '▶ Reprendre' : '⏸ Pause';
+  btn.style.borderColor = BULK.paused ? 'var(--g)' : '';
+  btn.style.color       = BULK.paused ? 'var(--g)' : '';
+  log(BULK.paused ? '⏸ Envoi mis en pause' : '▶ Envoi repris', 'warn');
+}
+
+function stopBulk() {
+  if (!confirm('Arrêter l\'envoi en cours ?')) return;
+  BULK.stopped = true;
+  log('⏹ Envoi arrêté par l\'utilisateur', 'warn');
+}
+
+function showProgress() {
+  const _bpw = document.getElementById('bulk-progress-wrap') || document.getElementById('progress-wrap'); if(_bpw) _bpw.style.display = 'block';
+}
+function hideProgress() {
+  const _bpw2 = document.getElementById('bulk-progress-wrap') || document.getElementById('progress-wrap'); if(_bpw2) _bpw2.style.display = 'none';
+}
+
+function updateProgress(sent, failed, retried, total, currentEmail) {
+  const done = sent + failed;
+  const pct  = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('bp-ok').textContent   = sent;
+  document.getElementById('bp-pct').textContent  = pct + '%';
+  const _fill = document.getElementById('bpbar-fill') || document.getElementById('pb-fill'); if(_fill) _fill.style.width = pct + '%';
+
+  if (failed > 0) {
+    document.getElementById('bp-err').style.display   = 'inline';
+    document.getElementById('bp-err-n').textContent   = failed;
+  }
+  if (retried > 0) {
+    const _retry = document.getElementById('bp-retry'); if(_retry) _retry.style.display = 'inline';
+    const _retryn = document.getElementById('bp-retry-n'); if(_retryn) _retryn.textContent = retried;
+  }
+
+  if (currentEmail) {
+    const _cur = document.getElementById('bp-current'); if(_cur) _cur.textContent = '→ ' + currentEmail;
+  }
+
+  // ETA calculation
+  const elapsed = (Date.now() - BULK.startAt) / 1000;
+  if (done > 0 && elapsed > 2) {
+    const rate    = done / elapsed;
+    const remaining = total - done;
+    const etaSec  = Math.round(remaining / rate);
+    document.getElementById('bp-eta').textContent =
+      etaSec > 3600 ? Math.round(etaSec/3600) + 'h restantes'
+      : etaSec > 60  ? Math.round(etaSec/60) + 'min restantes'
+      : etaSec + 's restantes';
+  }
+
+  document.getElementById('st-status').textContent = done + '/' + total + ' (' + pct + '%)';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COLLECT CONFIG — builds the payload for the backend
+// ══════════════════════════════════════════════════════════════════
+function collectConfig() {
+  return {
+    provider: APP.prov,
+    smtp: {
+      host:     v('smtp-host'),
+      port:     v('smtp-port'),
+      security: v('smtp-sec'),
+      user:     v('smtp-user'),
+      pass:     v('smtp-pass'),
+      timeout:  v('smtp-timeout') || '30',
+    },
+    gmail: {
+      user: v('gmail-user'),
+      pass: v('gmail-pass'),
+    },
+    outlook: {
+      host: v('outlook-host') || 'smtp-mail.outlook.com',
+      port: v('outlook-port') || '587',
+      user: v('outlook-user'),
+      pass: v('outlook-pass'),
+    },
+    ses: {
+      endpoint:  v('ses-endpoint'),
+      port:      v('ses-port'),
+      user:      v('ses-user'),
+      pass:      v('ses-pass'),
+      configSet: v('ses-configset'),
+      region:    v('ses-region'),
+    },
+    brevo: {
+      mode:   window.BREVO_MODE || 'api',
+      apiKey: v('brevo-apikey'),
+      host:   v('brevo-host') || 'smtp-relay.brevo.com',
+      port:   v('brevo-port') || '587',
+      user:   v('brevo-user'),
+      pass:   v('brevo-pass'),
+    },
+    sendgrid: {
+      apiKey:   v('sg-key'),
+      mode:     document.getElementById('sg-mode') ? document.getElementById('sg-mode').value : 'api',
+      sandbox:  document.getElementById('sg-sandbox') ? document.getElementById('sg-sandbox').checked : false,
+      trackOpens:  document.getElementById('sg-opens')  ? document.getElementById('sg-opens').checked  : true,
+      trackClicks: document.getElementById('sg-clicks') ? document.getElementById('sg-clicks').checked : true,
+      addUnsub:    document.getElementById('sg-unsub')  ? document.getElementById('sg-unsub').checked  : true,
+      templateId:  v('sg-tpl'),
+      category:    v('sg-cat'),
+    },
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TEST PROVIDERS — call backend /test
+// ══════════════════════════════════════════════════════════════════
+async function testSMTP()        { await testProviderBackend('smtp');     }
+async function testSES()         { await testProviderBackend('ses');      }
+async function testSendGrid()    { await testProviderBackend('sendgrid'); }
+async function testSG()          { await testProviderBackend('sendgrid'); }
+async function testProv(prov)    { await testProviderBackend(prov);       }
+
+async function testProviderBackend(prov) {
+  if (!backendOnline) {
+    toast('⚠ Backend offline — lancez node server.js', 'error');
+    showLog();
+    log('✗ Backend non connecté — lancez : node server.js dans le dossier mucho666-server', 'err');
+    log('→ Puis cliquez sur "Backend offline" en haut pour vérifier', 'info');
+    return;
+  }
+
+  const cfg = collectConfig();
+  cfg.provider  = prov;
+  cfg.fromEmail = v('from-email') || 'test@test.com';
+
+  showLog();
+  log('=== TEST ' + prov.toUpperCase() + ' ===', 'info');
+  await wait(200);
+
+  try {
+    const r = await fetch(BACKEND + '/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg),
+      signal: AbortSignal.timeout(45000),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      log('✓ ' + prov.toUpperCase() + ' — connexion validée', 'ok');
+      toast(prov.toUpperCase() + ' connecté ✓', 'success');
+    } else {
+      log('✗ ' + prov.toUpperCase() + ' — ' + (d.msg || 'Erreur inconnue'), 'err');
+      if (d.hint) log('💡 ' + d.hint, 'warn');
+      toast('Échec : ' + (d.msg || 'Erreur'), 'error');
+    }
+  } catch(e) {
+    log('✗ Erreur réseau : ' + e.message, 'err');
+    toast('Erreur réseau : ' + e.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SEND EMAIL — main orchestrator
+// ══════════════════════════════════════════════════════════════════
+async function sendEmail() {
+  if (APP.sending) return;
+
+  const errs = validate();
+  if (errs.length > 0) {
+    showLog(); errs.forEach(e => log('✗ ' + e, 'err'));
+    toast(errs[0], 'error'); return;
+  }
+
+  // Check backend
+  if (!backendOnline) {
+    // SendGrid can work directly from browser — skip backend check
+    if (APP.prov !== 'sendgrid') {
+      toast('⚠ Backend offline — lancez node server.js', 'error');
+      showLog();
+      log('✗ Pour SMTP/Gmail/Outlook/SES : lancez node server.js', 'err');
+      log('→ SendGrid fonctionne sans backend depuis le navigateur', 'info');
+      return;
+    }
+  }
+
+  // Delayed send
+  if (document.getElementById('opt-delay').checked) {
+    const at = v('delay-dt');
+    if (!at) { toast('Choisissez une date', 'error'); return; }
+    if (new Date(at) <= new Date()) { toast('La date doit être dans le futur', 'error'); return; }
+    saveDraft(true);
+    log('Envoi différé programmé : ' + new Date(at).toLocaleString('fr-FR'), 'warn');
+    toast('Programmé pour ' + new Date(at).toLocaleString('fr-FR'), 'info');
+    return;
+  }
+
+  const isBulk = document.getElementById('opt-bulk').checked || APP.tags.to.length > 1;
+  // Apply blacklist before sending
+  const allRecipients = filterByBlacklist([...APP.tags.to]);
+  if (allRecipients.length < APP.tags.to.length) {
+    log('Blacklist : ' + (APP.tags.to.length - allRecipients.length) + ' email(s) exclus', 'warn');
+  }
+  if (allRecipients.length === 0) {
+    toast('Tous les destinataires sont blacklistés !', 'error'); return;
+  }
+  const totalRecipients = allRecipients.length;
+
+  APP.sending = true;
+  setSendUI(true);
+  setPill('ENVOI…', 'var(--y)');
+  showLog();
+  resetBulk();
+  BULK.total = totalRecipients;
+
+  if (totalRecipients > 1) { showProgress(); showLiveStats(); }
+
+  log('=== MUCHO666 ENVOI ===', 'info');
+  log('Provider : ' + APP.prov.toUpperCase(), 'info');
+  log('De : ' + v('from-name') + ' <' + v('from-email') + '>', 'info');
+  log('Objet : ' + v('subject'), 'info');
+  log('Destinataires : ' + totalRecipients, 'info');
+  if (APP.prov === 'sendgrid' && document.getElementById('sg-sandbox').checked) {
+    log('⚠ Mode SANDBOX — emails non envoyés réellement', 'warn');
+  }
+
+  // ── Route to correct send strategy ──
+  if (APP.prov === 'sendgrid' && !backendOnline) {
+    await sendDirectSendGrid(allRecipients);
+  } else if (APP.prov === 'brevo') {
+    if (BREVO_MODE === 'smtp' && backendOnline) {
+      await sendViaBackend(allRecipients, isBulk);
+    } else {
+      await sendDirectBrevo(allRecipients);
+    }
+  } else {
+    await sendViaBackend(allRecipients, isBulk);
+  }
+
+  APP.sending = false;
+  setSendUI(false);
+  hideProgress();
+  hideLiveStats();
+
+  const total = totalRecipients;
+  if (BULK.sent === total) {
+    document.getElementById('st-status').textContent = '✓ ' + BULK.sent + ' envoyés';
+    setPill('SUCCÈS', 'var(--g)');
+    toast('✓ ' + BULK.sent + ' email(s) envoyés !', 'success');
+  } else if (BULK.stopped) {
+    document.getElementById('st-status').textContent = '⏹ ' + BULK.sent + '/' + total;
+    setPill('ARRÊTÉ', 'var(--y)');
+    toast('Arrêté : ' + BULK.sent + '/' + total + ' envoyés', 'warn');
+  } else {
+    document.getElementById('st-status').textContent = '⚠ ' + BULK.sent + '/' + total;
+    setPill('ERREURS', 'var(--r)');
+    toast(BULK.sent + '/' + total + ' envoyés — ' + BULK.failed + ' échec(s)', 'error');
+  }
+
+  log('=== FIN : ' + BULK.sent + '/' + total + ' envoyé(s), ' + BULK.failed + ' échec(s) ===',
+    BULK.sent === total ? 'ok' : 'warn');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SEND DIRECT — SendGrid from browser (no backend)
+// Max 1000 per batch via personalizations
+// ══════════════════════════════════════════════════════════════════
+async function sendDirectSendGrid(recipients) {
+  const apiKey     = v('sg-key');
+  const fromEmail  = v('from-email');
+  const fromName   = v('from-name');
+  const subject    = v('subject');
+  const isHTML     = document.getElementById('html-mode').checked;
+  const htmlBody   = document.getElementById('body-html').innerHTML;
+  const textBody   = document.getElementById('body-plain').value;
+  const replyTo    = v('reply-to');
+  const sandbox    = document.getElementById('sg-sandbox').checked;
+  const trackOpens = document.getElementById('sg-opens').checked;
+  const trackClicks= document.getElementById('sg-clicks').checked;
+  const addUnsub   = document.getElementById('sg-unsub').checked;
+  const tplId      = v('sg-tpl');
+  const category   = v('sg-cat');
+
+  const BATCH_SIZE = 1000; // SendGrid max per request
+  const RATE_DELAY = 110;  // ~9 req/sec, under 10/sec limit
+
+  const basePayload = {
+    from:    { email: fromEmail, name: fromName || fromEmail },
+    subject: subject,
+    content: [
+      { type: 'text/plain', value: textBody || htmlBody.replace(/<[^>]+>/g,'') || ' ' },
+      { type: 'text/html',  value: isHTML ? htmlBody : '<p>' + (textBody||'').replace(/\n/g,'<br>') + '</p>' },
+    ],
+    tracking_settings: {
+      open_tracking:  { enable: trackOpens },
+      click_tracking: { enable: trackClicks },
+    },
+    mail_settings: { sandbox_mode: { enable: sandbox } },
+  };
+
+  if (replyTo)   basePayload.reply_to   = { email: replyTo };
+  if (tplId)     basePayload.template_id = tplId;
+  if (category)  basePayload.categories  = [category];
+  if (addUnsub)  basePayload.headers = {
+    'List-Unsubscribe': '<mailto:unsub@' + fromEmail.split('@')[1] + '>',
+    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  };
+
+  // Process in batches of 1000
+  for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+    if (BULK.stopped) break;
+
+    // Wait while paused
+    while (BULK.paused && !BULK.stopped) await wait(500);
+    if (BULK.stopped) break;
+
+    const batch = recipients.slice(i, i + BATCH_SIZE);
+    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+    const totalBatches = Math.ceil(recipients.length / BATCH_SIZE);
+
+    log('Batch ' + batchNum + '/' + totalBatches + ' — ' + batch.length + ' emails…', 'info');
+    updateProgress(BULK.sent, BULK.failed, BULK.retried, BULK.total,
+      'Batch ' + batchNum + '/' + totalBatches);
+
+    // Per-recipient spin + variables
+    const payload = {
+      ...basePayload,
+      personalizations: batch.map(email => {
+        const spunBody = getCurrentBody(email);
+        const isHtmlBody = BODY_MODE === 'html' || BODY_MODE === 'spin';
+        return {
+          to: [{ email }],
+          subject: getSpunSubject(email),
+          content: [
+            { type: 'text/plain', value: spunBody.replace(/<[^>]+>/g, '').trim() || ' ' },
+            { type: 'text/html',  value: isHtmlBody ? spunBody : '<p>' + spunBody.replace(/\n/g, '<br>') + '</p>' },
+          ],
+        };
+      }),
+    };
+
+    let success = false;
+    let retries = 0;
+    const MAX_RETRIES = 3;
+
+    while (!success && retries < MAX_RETRIES) {
+      try {
+        const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(30000),
+        });
+
+        if (res.status === 202 || res.status === 200) {
+          BULK.sent += batch.length;
+          success = true;
+          log('✓ Batch ' + batchNum + ' envoyé (' + batch.length + ' emails) — HTTP ' + res.status, 'ok');
+        } else if (res.status === 429) {
+          // Rate limited — wait and retry
+          retries++;
+          BULK.retried++;
+          const wait_ms = 1000 * retries;
+          log('⏳ Rate limit — attente ' + wait_ms + 'ms (retry ' + retries + '/' + MAX_RETRIES + ')', 'warn');
+          await wait(wait_ms);
+        } else {
+          let errMsg = 'HTTP ' + res.status;
+          try { const d = await res.json(); errMsg = (d.errors || []).map(e=>e.message).join(', ') || errMsg; } catch(e2) {}
+          log('✗ Batch ' + batchNum + ' : ' + errMsg, 'err');
+          BULK.failed += batch.length;
+          success = true; // Don't retry non-rate-limit errors
+        }
+      } catch(e) {
+        retries++;
+        if (retries >= MAX_RETRIES) {
+          log('✗ Batch ' + batchNum + ' erreur réseau : ' + e.message, 'err');
+          BULK.failed += batch.length;
+        } else {
+          log('⏳ Erreur réseau, retry ' + retries + '/' + MAX_RETRIES, 'warn');
+          await wait(1000 * retries);
+        }
+      }
+    }
+
+    updateProgress(BULK.sent, BULK.failed, BULK.retried, BULK.total,
+      'Batch ' + batchNum + '/' + totalBatches);
+
+    // Rate limit between batches
+    if (i + BATCH_SIZE < recipients.length) await wait(RATE_DELAY);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SEND DIRECT BREVO — API v3, sans backend
+// 100k supporté via envois séquentiels avec retry
+// ══════════════════════════════════════════════════════════════════
+async function sendDirectBrevo(recipients) {
+  const key       = v('brevo-apikey');
+  const fromEmail = v('from-email');
+  const fromName  = v('from-name');
+  const subject   = v('subject');
+  const isHTML    = document.getElementById('html-mode').checked;
+  const htmlBody  = document.getElementById('body-html').innerHTML;
+  const textBody  = document.getElementById('body-plain').value;
+  const replyTo   = v('reply-to');
+  const isBulk    = document.getElementById('opt-bulk').checked;
+  const bDelay    = parseInt(v('bulk-delay')) || 200;
+  const total     = recipients.length;
+
+  // Brevo API: 9 req/sec max on free, up to 100/sec on higher plans
+  // We use 200ms delay between sends = ~5/sec safe default
+  const RATE_DELAY = Math.max(bDelay, 150);
+
+  log('Brevo API v3 — ' + total + ' emails à envoyer', 'info');
+  log('Délai entre envois : ' + RATE_DELAY + 'ms', 'info');
+
+  for (let i = 0; i < recipients.length; i++) {
+    if (BULK.stopped) break;
+    while (BULK.paused && !BULK.stopped) await wait(300);
+    if (BULK.stopped) break;
+
+    const to = recipients[i];
+    let sent = false;
+
+    for (let attempt = 1; attempt <= 3 && !sent; attempt++) {
+      try {
+        // Apply spin + variables per recipient
+    const spunSubject = getSpunSubject(to);
+    const spunBody = getCurrentBody(to);
+    const res = await sendBrevoAPI(to, fromEmail, fromName, spunSubject,
+      (BODY_MODE === 'html' || BODY_MODE === 'spin') ? spunBody : null,
+      BODY_MODE === 'plain' ? spunBody : spunBody.replace(/<[^>]+>/g, ''),
+      replyTo);
+        if (res.ok) {
+          BULK.sent++;
+          sent = true;
+        } else if (res.msg && res.msg.includes('429')) {
+          log('⏳ Rate limit — attente 2s…', 'warn');
+          await wait(2000 * attempt);
+        } else {
+          BULK.failed++;
+          if (BULK.failed <= 5) log('✗ ' + to + ' : ' + res.msg, 'err');
+          sent = true;
+        }
+      } catch(e) {
+        if (attempt === 3) { BULK.failed++; log('✗ ' + to + ' : ' + e.message, 'err'); }
+        else await wait(1000 * attempt);
+      }
+    }
+
+    updateProgress(BULK.sent, BULK.failed, BULK.retried, total, to);
+    if (i % 100 === 0 && i > 0) log('Progression : ' + BULK.sent + '/' + total, 'info');
+    if (i < recipients.length - 1) await wait(RATE_DELAY);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SEND VIA BACKEND — 1 seul appel, le backend gère tout
+// SendGrid: batches de 1000 côté serveur
+// SMTP/SES : pool nodemailer, concurrence automatique
+// ══════════════════════════════════════════════════════════════════
+async function sendViaBackend(recipients, isBulk) {
+  const cfg    = collectConfig();
+  const isHTML = document.getElementById('html-mode').checked;
+
+  // Parse custom headers
+  const customHeaders = {};
+  try {
+    v('custom-hdrs').split('\n').forEach(line => {
+      const idx = line.indexOf(':');
+      if (idx > 0) customHeaders[line.slice(0,idx).trim()] = line.slice(idx+1).trim();
+    });
+  } catch(e) {}
+
+  const payload = {
+    ...cfg,
+    fromEmail:   v('from-email'),
+    fromName:    v('from-name'),
+    to:          recipients[0],
+    recipients,
+    isBulk:      recipients.length > 1,
+    subject:     v('spin-subject') || v('subject'),
+    isHTML,
+    varRaw:      document.getElementById('spin-vars') ? document.getElementById('spin-vars').value : '',
+    body:        getCurrentBodyForPayload(),
+    textBody:    document.getElementById('body-plain').value,
+    replyTo:     v('reply-to') || undefined,
+    priority:    document.getElementById('priority')?.value || 'normal',
+    readReceipt: document.getElementById('opt-receipt')?.checked || false,
+    customHeaders,
+    trackOpens:  cfg.sendgrid.trackOpens,
+    trackClicks: cfg.sendgrid.trackClicks,
+    sandbox:     cfg.sendgrid.sandbox,
+    addUnsub:    cfg.sendgrid.addUnsub,
+    templateId:  cfg.sendgrid.templateId,
+    category:    cfg.sendgrid.category,
+  };
+
+  const n = recipients.length;
+  log('Envoi backend — ' + n + ' destinataires via ' + APP.prov.toUpperCase(), 'info');
+  log('Le backend gère le batching et la concurrence automatiquement', 'info');
+
+  // Timeout adapté à la taille : 5s par 1000 emails, min 30s, max 30min
+  // Timeout adapté : 10s par email pour SMTP lent, min 60s, max 30min
+  const perEmail = APP.prov === 'ses' ? 3000 : 8000; // SES plus rapide
+  const timeoutMs = Math.max(60000, Math.min(1800000, n * perEmail));
+  log('Timeout : ' + Math.round(timeoutMs/1000) + 's pour ' + n + ' emails via ' + APP.prov.toUpperCase(), 'info');
+  updateProgress(0, 0, 0, n, 'En cours…');
+
+  let retries = 0;
+  while (retries < 3) {
+    if (BULK.stopped) break;
+    try {
+      const r = await fetch(BACKEND + '/send', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+        signal:  AbortSignal.timeout(timeoutMs),
+      });
+      const d = await r.json();
+
+      BULK.sent   = d.sent   || (d.ok ? n : 0);
+      BULK.failed = d.failed || (d.ok ? 0 : n);
+
+      if (d.sent > 0 || d.ok) {
+        log('✓ ' + BULK.sent + ' email(s) envoyés' +
+          (BULK.failed > 0 ? ' — ' + BULK.failed + ' échec(s)' : '') +
+          (d.elapsed ? ' en ' + d.elapsed + 's' : '') +
+          (d.rate    ? ' (' + d.rate + ' emails/sec)' : ''),
+          BULK.failed > 0 ? 'warn' : 'ok');
+        if (d.errors?.length) {
+          d.errors.slice(0, 5).forEach(e => log('  ✗ ' + (e.to || 'batch ' + e.batch || '') + ' : ' + e.msg, 'err'));
+          if (d.errors.length > 5) log('  … et ' + (d.errors.length - 5) + ' autres erreurs (voir console backend)', 'err');
+        }
+      } else {
+        BULK.failed = n;
+        log('✗ ' + (d.msg || 'Erreur backend inconnue'), 'err');
+        if (d.msg && d.msg.includes('impossible')) {
+          log('→ Vérifiez vos credentials SES (username/password SMTP, pas la clé IAM)', 'info');
+          log('→ Console SES : SMTP Settings → Create SMTP Credentials', 'info');
+        }
+      }
+      break;
+
+    } catch(e) {
+      retries++;
+      BULK.retried++;
+      const isTimeout = e.message.includes('timed out') || e.message.includes('timeout') || e.name === 'TimeoutError';
+      if (retries >= 3) {
+        BULK.failed = n;
+        if (isTimeout) {
+          log('✗ Timeout — le backend met trop longtemps à répondre', 'err');
+          log('→ Normal pour gros volumes. Augmentez le timeout dans server.js si nécessaire', 'info');
+          log('→ Pour SES : vérifiez que le quota 50k/jour est suffisant', 'info');
+        } else {
+          log('✗ Erreur après 3 tentatives : ' + e.message, 'err');
+        }
+      } else {
+        const delay = isTimeout ? 5000 : retries * 2000;
+        log('⏳ ' + (isTimeout ? 'Timeout' : 'Erreur') + ', retry ' + retries + '/3 dans ' + Math.round(delay/1000) + 's…', 'warn');
+        await wait(delay);
+      }
+    }
+  }
+
+  updateProgress(BULK.sent, BULK.failed, BULK.retried, n, 'Terminé');
+}
+
+
+function setSendUI(on) {
+  const btn=document.getElementById('send-btn');
+  btn.disabled=on;
+  btn.innerHTML=on
+    ?'<div class="spin"></div> Envoi en cours…'
+    :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Envoyer';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DRAFT
+// ══════════════════════════════════════════════════════════════════
+function saveDraft(silent=false) {
+  const d={
+    id:Date.now(),at:new Date().toLocaleString('fr-FR'),prov:APP.prov,
+    fromName:v('from-name'),fromEmail:v('from-email'),
+    to:[...APP.tags.to],cc:[...APP.tags.cc],bcc:[...APP.tags.bcc],
+    subject:v('subject'),
+    isHTML:document.getElementById('html-mode').checked,
+    body:document.getElementById('html-mode').checked
+      ?document.getElementById('body-html').innerHTML
+      :document.getElementById('body-plain').value
+  };
+  APP.drafts.unshift(d); APP.drafts=APP.drafts.slice(0,10);
+  try{localStorage.setItem('m666_drafts',JSON.stringify(APP.drafts));}catch(e){}
+  if(!silent){toast('Brouillon sauvegardé','info');log('Brouillon sauvegardé','info');}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PREVIEW
+// ══════════════════════════════════════════════════════════════════
+function openPreview() {
+  const isHTML=document.getElementById('html-mode').checked;
+  const rows=[
+    ['De', v('from-name')+' <'+v('from-email')+'>'],
+    ['À',  APP.tags.to.join(', ')||'(aucun)'],
+    ...(APP.tags.cc.length?[['CC',APP.tags.cc.join(', ')]]:[]),
+    ...(APP.tags.bcc.length?[['BCC',APP.tags.bcc.join(', ')]]:[]),
+    ['Objet',   v('subject')||'(aucun)'],
+    ['Provider',APP.prov.toUpperCase()],
+    ['Format',  isHTML?'HTML':'Texte brut'],
+    ...(APP.files.length?[['Fichiers',APP.files.map(f=>f.name).join(', ')]]:[])
+  ];
+  const cont=document.getElementById('preview-content'); cont.innerHTML='';
+  rows.forEach(([k,val])=>{
+    const row=document.createElement('div'); row.className='prev-row';
+    const key=document.createElement('span'); key.className='prev-key'; key.textContent=k;
+    const vEl=document.createElement('span'); vEl.className='prev-val'; vEl.textContent=val;
+    row.append(key,vEl); cont.appendChild(row);
+  });
+  const sep=document.createElement('div'); sep.className='prev-sep'; cont.appendChild(sep);
+  const body=document.createElement('div');
+  if(isHTML){body.className='prev-html';body.innerHTML=document.getElementById('body-html').innerHTML;}
+  else{body.className='prev-text';body.textContent=document.getElementById('body-plain').value;}
+  cont.appendChild(body);
+  document.getElementById('preview-overlay').classList.add('on');
+}
+function closePreview(){document.getElementById('preview-overlay').classList.remove('on');}
+
+// ══════════════════════════════════════════════════════════════════
+// RESET FORM (BUG FIX: full reset including file input)
+// ══════════════════════════════════════════════════════════════════
+function resetForm() {
+  if(!confirm('Vider complètement le formulaire ?')) return;
+  ['from-name','from-email','subject','body-plain','reply-to','custom-hdrs'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('body-html').innerHTML='';
+  document.getElementById('html-mode').checked=false; togHtml();
+  APP.tags={to:[],cc:[],bcc:[]};
+  ['to','cc','bcc'].forEach(f=>{
+    renderTags(f);
+    const e=document.getElementById('tagerr-'+f); if(e) e.style.display='none';
+  });
+  APP.files=[]; renderFiles();
+  // BUG FIX: reset file input
+  document.getElementById('file-input').value='';
+  document.getElementById('st-status').textContent='En attente';
+  updStats(); updSubj(); updBody(); setPill('PRÊT','var(--g)');
+  toast('Formulaire réinitialisé','info');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DELIVERABILITY ANALYZER
+// ══════════════════════════════════════════════════════════════════
+// ── DNS lookup via Cloudflare DoH (public, no CORS) ─────────────
+async function dnsLookup(name, type) {
+  try {
+    const r = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`,
+      { headers: { Accept: 'application/dns-json' }, signal: AbortSignal.timeout(6000) }
+    );
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.Answer || []).map(a => a.data || '');
+  } catch(e) { return null; } // null = timeout/error
+}
+
+async function analyze() {
+  // Get domain from sender email
+  const fromEmail = v('from-email');
+  const domain    = fromEmail.includes('@') ? fromEmail.split('@')[1].toLowerCase().trim() : '';
+
+  if (!domain) {
+    toast('Entrez votre adresse expéditeur (étape 1) avant d\'analyser', 'error');
+    return;
+  }
+
+  const subject = v('subject') || v('spin-subject') || '';
+  const prov    = APP.prov;
+  const hdrs    = v('custom-hdrs').toLowerCase();
+  const isBulk  = document.getElementById('opt-bulk')?.checked || APP.tags.to.length > 5;
+  const hasUnsubHdr = hdrs.includes('list-unsubscribe');
+  const hasUnsubSG  = prov === 'sendgrid' && document.getElementById('sg-unsub')?.checked;
+
+  let body = '';
+  if (BODY_MODE === 'spin') body = SPIN_LETTERS.join(' ');
+  else if (BODY_MODE === 'html') body = document.getElementById('body-html')?.innerText || '';
+  else body = document.getElementById('body-plain')?.value || '';
+
+  // Update UI to loading state
+  ['spf','dkim','dmarc','unsub','ptr','bimi'].forEach(k => {
+    setD(k, 'na', '⏳ Vérification DNS en cours…', 'na', '…');
+  });
+  const sc = document.getElementById('global-score');
+  if (sc) { sc.textContent = '…'; sc.style.color = 'var(--y)'; }
+  showLog();
+  log('=== ANALYSE DNS : ' + domain + ' ===', 'info');
+
+  let score = 0;
+
+  // ── 1. SPF — TXT on domain ───────────────────────────────────────
+  log('Vérification SPF pour ' + domain + '…', 'info');
+  const spfRecords = await dnsLookup(domain, 'TXT');
+  const spfRecord  = spfRecords === null ? null
+    : spfRecords.find(r => r.includes('v=spf1'));
+
+  if (spfRecords === null) {
+    setD('spf','na','⚠ Timeout DNS — réessayez','warn','?/20');
+  } else if (spfRecord) {
+    score += 20;
+    const policy = spfRecord.includes('-all') ? '(strict -all)' : spfRecord.includes('~all') ? '(souple ~all)' : '(permissif +all)';
+    const pts = spfRecord.includes('-all') ? 20 : spfRecord.includes('~all') ? 18 : 12;
+    score = score - 20 + pts;
+    setD('spf','ok','✓ SPF trouvé ' + policy,'ok', pts + '/20');
+    log('✓ SPF : ' + spfRecord.slice(0,80), 'ok');
+  } else {
+    setD('spf','ko','✗ Aucun enregistrement SPF','warn','0/20');
+    log('✗ SPF absent — ajoutez un enregistrement TXT sur ' + domain, 'err');
+  }
+
+  // ── 2. DKIM — check common selectors ─────────────────────────────
+  log('Vérification DKIM…', 'info');
+  const selectors = ['default','mail','google','smtp','dkim','s1','s2','k1','selector1','selector2','mx','email'];
+  let dkimFound = null;
+  let dkimSelector = '';
+  for (const sel of selectors) {
+    const recs = await dnsLookup(`${sel}._domainkey.${domain}`, 'TXT');
+    if (recs && recs.some(r => r.includes('v=DKIM1') || r.includes('p='))) {
+      dkimFound = recs.find(r => r.includes('v=DKIM1') || r.includes('p='));
+      dkimSelector = sel;
+      break;
+    }
+  }
+  if (dkimFound) {
+    score += 25;
+    setD('dkim','ok','✓ DKIM trouvé (selector: ' + dkimSelector + ')','ok','25/25');
+    log('✓ DKIM : selector=' + dkimSelector + '._domainkey.' + domain, 'ok');
+  } else if (dkimFound === null) {
+    setD('dkim','na','⚠ Timeout DNS — réessayez','warn','?/25');
+  } else {
+    setD('dkim','ko','✗ DKIM non trouvé (sélecteurs testés: ' + selectors.slice(0,6).join(',') + '…)','warn','0/25');
+    log('✗ DKIM absent — configurez via votre provider email', 'err');
+  }
+
+  // ── 3. DMARC — TXT on _dmarc.domain ─────────────────────────────
+  log('Vérification DMARC…', 'info');
+  const dmarcRecords = await dnsLookup('_dmarc.' + domain, 'TXT');
+  const dmarcRecord  = dmarcRecords === null ? null
+    : dmarcRecords.find(r => r.includes('v=DMARC1'));
+
+  if (dmarcRecords === null) {
+    setD('dmarc','na','⚠ Timeout DNS — réessayez','warn','?/20');
+  } else if (dmarcRecord) {
+    const policy = dmarcRecord.match(/p=(\w+)/)?.[1] || 'none';
+    const pts = policy === 'reject' ? 20 : policy === 'quarantine' ? 16 : 10;
+    score += pts;
+    setD('dmarc','ok','✓ DMARC trouvé — p=' + policy,'ok', pts + '/20');
+    log('✓ DMARC : ' + dmarcRecord.slice(0,80), 'ok');
+    if (policy === 'none') log('⚠ p=none = monitoring seulement — passez à quarantine puis reject', 'warn');
+  } else {
+    setD('dmarc','ko','✗ Aucun enregistrement DMARC','warn','0/20');
+    log('✗ DMARC absent — ajoutez _dmarc TXT sur ' + domain, 'err');
+  }
+
+  // ── 4. List-Unsubscribe ───────────────────────────────────────────
+  if (hasUnsubHdr || hasUnsubSG) {
+    score += 10;
+    setD('unsub','ok','✓ List-Unsubscribe configuré','ok','10/10');
+    log('✓ List-Unsubscribe présent', 'ok');
+  } else if (isBulk) {
+    setD('unsub','ko','✗ Manquant — obligatoire pour envois en masse (Gmail/Yahoo 2024)','warn','0/10');
+    log('✗ List-Unsubscribe manquant — ajoutez dans Options avancées → En-têtes', 'err');
+  } else {
+    score += 5;
+    setD('unsub','na','— Non requis pour envoi individuel','na','5/10');
+  }
+
+  // ── 5. MX records (existence) ─────────────────────────────────────
+  log('Vérification MX…', 'info');
+  const mxRecords = await dnsLookup(domain, 'MX');
+  if (mxRecords && mxRecords.length > 0) {
+    score += 5;
+    setD('ptr','ok','✓ MX configuré — ' + (mxRecords[0] || '').slice(0,40),'ok','5/5');
+    log('✓ MX : ' + mxRecords.slice(0,2).join(', '), 'ok');
+  } else if (mxRecords === null) {
+    setD('ptr','na','⚠ Timeout DNS','warn','?/5');
+  } else {
+    setD('ptr','ko','✗ Aucun enregistrement MX','warn','0/5');
+    log('✗ MX absent — votre domaine ne peut pas recevoir d\'emails', 'err');
+  }
+
+  // ── 6. BIMI (optionnel) ───────────────────────────────────────────
+  const bimiRecords = await dnsLookup('default._bimi.' + domain, 'TXT');
+  if (bimiRecords && bimiRecords.some(r => r.includes('v=BIMI1'))) {
+    score += 3;
+    setD('bimi','ok','✓ BIMI configuré — logo affiché dans Gmail/Yahoo','ok','+3');
+    log('✓ BIMI trouvé', 'ok');
+  } else {
+    setD('bimi','na','— Non configuré (optionnel — requiert DMARC p=reject)','na','opt.');
+  }
+
+  // ── Contenu ────────────────────────────────────────────────────────
+  const SPAM_WORDS = ['gratuit','urgent','cliquez ici','gagné','100%','sans risque',
+    'acheter maintenant','offre spéciale','casino','viagra','winner','loterie','free money'];
+  const spamS = SPAM_WORDS.filter(w => subject.toLowerCase().includes(w));
+  const spamB = SPAM_WORDS.filter(w => body.toLowerCase().includes(w));
+  const sl    = subject.length;
+
+  if (sl >= 25 && sl <= 55) score += 8;
+  else if (sl > 0)           score += 4;
+
+  score = Math.max(0, score - spamS.length * 8 - spamB.length * 3);
+
+  // Bonus spin
+  if (BODY_MODE === 'spin' && SPIN_LETTERS.length > 1) score = Math.min(100, score + 5);
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // ── Render final score ────────────────────────────────────────────
+  if (sc) {
+    sc.textContent  = score;
+    sc.style.color  = score >= 75 ? 'var(--g)' : score >= 50 ? 'var(--y)' : 'var(--r)';
+  }
+  const bar = document.getElementById('score-bar');
+  if (bar) {
+    bar.style.width = score + '%';
+    bar.className   = 'score-fill ' + (score >= 75 ? 'sf-g' : score >= 50 ? 'sf-y' : 'sf-r');
+  }
+  const lbl = document.getElementById('score-lbl');
+  if (lbl) lbl.textContent = score >= 75
+    ? '🟢 Bonne délivrabilité (' + domain + ')'
+    : score >= 50 ? '🟡 Moyenne — améliorations nécessaires'
+    : '🔴 Faible — risque spam élevé';
+
+  log('=== SCORE FINAL : ' + score + '/100 ===', score >= 70 ? 'ok' : score >= 50 ? 'warn' : 'err');
+  if (spamS.length > 0) log('⚠ Mots spam dans objet : ' + spamS.join(', '), 'warn');
+  if (spamB.length > 0) log('⚠ Mots spam dans corps : ' + spamB.slice(0,5).join(', '), 'warn');
+  if (sl === 0)  log('⚠ Objet vide', 'warn');
+  if (sl > 60)   log('⚠ Objet trop long (' + sl + ' car.)', 'warn');
+  toast('Score ' + domain + ' : ' + score + '/100', score >= 70 ? 'success' : score >= 50 ? 'warn' : 'error');
+}
+
+function setD(k,st,txt,cls,score) {
+  const s=document.getElementById('dst-'+k), b=document.getElementById('badge-'+k);
+  s.className='dstatus '+(st==='ok'?'dst-ok':st==='ko'?'dst-ko':'dst-na');
+  s.textContent=(st==='ok'?'✓ ':st==='ko'?'✗ ':'— ')+txt;
+  b.className='dbadge '+(cls==='ok'?'db-ok':cls==='warn'?'db-warn':'db-na');
+  b.textContent=score;
+}
+
+function cpCode(el) {
+  const t=el.textContent.replace(/⎘$/,'').trim();
+  if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>toast('Copié !','success')).catch(()=>fbCopy(t));}
+  else fbCopy(t);
+}
+function fbCopy(t) {
+  const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  toast('Copié !','success');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════════════════
+function showLog(){document.getElementById('logpanel').classList.add('on');}
+function log(msg,type='') {
+  const body=document.getElementById('log-body');
+  const line=document.createElement('div'); line.className='lline';
+  const t=document.createElement('span'); t.className='ltime';
+  t.textContent=new Date().toLocaleTimeString('fr-FR',{hour12:false});
+  const m=document.createElement('span'); m.className='lmsg'+(type?' '+type:'');
+  m.textContent=msg; // SAFE
+  line.append(t,m); body.appendChild(line); body.scrollTop=body.scrollHeight;
+}
+function clearLog(){document.getElementById('log-body').innerHTML='';}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════
+function toast(msg,type='info') {
+  const icons={success:'✓',error:'✗',info:'ℹ',warn:'⚠'};
+  const el=document.createElement('div'); el.className='toast '+type;
+  const ico=document.createElement('span'); ico.className='t-ico'; ico.textContent=icons[type]||'ℹ';
+  const txt=document.createElement('span'); txt.textContent=msg; // SAFE
+  el.append(ico,txt); document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),200);},3800);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STATUS PILL
+// ══════════════════════════════════════════════════════════════════
+function setPill(text,color) {
+  const pill = document.getElementById('hdr-pill');
+  if (pill) pill.textContent = text;
+  const dot = document.getElementById('hdr-dot');
+  if (dot) { dot.style.background = color; dot.style.boxShadow = '0 0 10px '+color; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function fmtB(b){if(b<1024)return b+' o';if(b<1048576)return Math.round(b/1024)+' Ko';return (b/1048576).toFixed(1)+' Mo';}
+
+// ── CC/BCC TOGGLE ────────────────────────────────────────────────
+function toggleCCBCC() {
+  const flds = document.getElementById('ccbcc-fields');
+  const btn  = document.getElementById('ccbcc-btn');
+  const open = flds.style.display === 'none' || flds.style.display === '';
+  flds.style.display = open ? 'block' : 'none';
+  btn.textContent    = open ? '− Masquer CC / BCC' : '+ Ajouter CC / BCC';
+  btn.classList.toggle('open', open);
+}
+
+// ── MODE SWITCHER (Texte / HTML) ─────────────────────────────────
+function switchMode(mode) {
+  const plainBtn = document.getElementById('mode-plain-btn');
+  const htmlBtn  = document.getElementById('mode-html-btn');
+  const chk      = document.getElementById('html-mode');
+
+  if (mode === 'html') {
+    plainBtn.classList.remove('on');
+    htmlBtn.classList.add('on');
+    chk.checked = true;
+  } else {
+    htmlBtn.classList.remove('on');
+    plainBtn.classList.add('on');
+    chk.checked = false;
+  }
+  togHtml(); // calls existing function
+}
+
+// ── OPTIONS TOGGLE ───────────────────────────────────────────────
+function toggleOpts() {
+  const flds  = document.getElementById('opts-fields');
+  const arrow = document.getElementById('opts-arrow');
+  const txt   = document.getElementById('opts-toggle-txt');
+  const open  = flds.style.display === 'none' || flds.style.display === '';
+  flds.style.display = open ? 'flex' : 'none';
+  arrow.classList.toggle('open', open);
+  txt.textContent = open ? 'Masquer les options' : 'Options avancées';
+}
+
+
+
+
+// ── IMPORT .TXT FILE ─────────────────────────────────────────────
+function importTxtFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Accept .txt and .csv
+  if (!file.name.match(/\.(txt|csv)$/i)) {
+    toast('Fichier invalide — utilisez un .txt ou .csv', 'error');
+    input.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+
+    // Parse: split by newlines, commas, semicolons — trim whitespace
+    const raw = text.split(/[\n\r,;]+/).map(s => s.trim()).filter(Boolean);
+
+    let added = 0, skipped = 0, invalid = 0;
+
+    raw.forEach(email => {
+      // Remove surrounding quotes (common in CSV exports)
+      const clean = email.replace(/^["']|["']$/g, '').trim().toLowerCase();
+      if (!clean) return;
+      if (!isEmail(clean)) { invalid++; return; }
+      if (APP.tags.to.includes(clean)) { skipped++; return; }
+      APP.tags.to.push(clean);
+      added++;
+    });
+
+    renderTags('to');
+    updStats();
+    updateToCount();
+    input.value = ''; // reset so same file can be re-imported
+
+    // Show count badge
+    const countEl = document.getElementById('txt-import-count');
+    if (added > 0) {
+      countEl.textContent = '+' + added + ' importé' + (added > 1 ? 's' : '');
+      countEl.style.display = 'inline-block';
+      setTimeout(() => { countEl.style.display = 'none'; }, 4000);
+    }
+
+    // Summary toast
+    let msg = added + ' email(s) importé(s)';
+    if (skipped > 0) msg += ' · ' + skipped + ' doublon(s) ignoré(s)';
+    if (invalid > 0) msg += ' · ' + invalid + ' invalide(s)';
+    toast(msg, added > 0 ? 'success' : 'warn');
+    showLog();
+    log('Import .txt : ' + added + ' ajoutés, ' + skipped + ' doublons, ' + invalid + ' invalides', added > 0 ? 'ok' : 'warn');
+  };
+
+  reader.onerror = function() {
+    toast('Erreur de lecture du fichier', 'error');
+  };
+
+  reader.readAsText(file, 'UTF-8');
+}
+
+
+// ── FIX: update IDs for new clean HTML ────────────────────────────
+// Map old IDs to new ones where they changed
+const ID_MAP = {
+  'pp-smtp':     'prov-smtp',
+  'pp-gmail':    'prov-gmail',
+  'pp-outlook':  'prov-outlook',
+  'pp-ses':      'prov-ses',
+  'pp-sendgrid': 'prov-sendgrid',
+  'pp-brevo':    'prov-brevo',
+};
+
+// setProv handled by main function above
+
+// Fix backend badge IDs
+const _origCheckBackend = window.checkBackend;
+window.checkBackend = async function() {
+  const badge = document.getElementById('bb');
+  const label = document.getElementById('bb-label');
+  if (!badge) return;
+  badge.className = 'bb checking';
+  label.textContent = 'Vérification…';
+  try {
+    const r = await fetch('http://127.0.0.1:2666/ping', { signal: AbortSignal.timeout(3000) });
+    const d = await r.json();
+    if (d.ok) {
+      backendOnline = true;
+      badge.className = 'bb online';
+      label.textContent = 'Backend connecté';
+      toast('Backend connecté ✓', 'success');
+    } else throw new Error();
+  } catch(e) {
+    backendOnline = false;
+    badge.className = 'bb offline';
+    label.textContent = 'Backend offline';
+  }
+};
+
+// Fix progress bar IDs
+const _origUpdateProgress = window.updateProgress;
+window.updateProgress = function(sent, failed, retried, total, cur) {
+  updateLiveStats(sent, failed, total);
+  const done = sent + failed;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const el = id => document.getElementById(id);
+  if (el('bp-ok')) el('bp-ok').textContent = sent;
+  if (el('bp-pct')) el('bp-pct').textContent = pct + '%';
+  if (el('pb-fill')) el('pb-fill').style.width = pct + '%';
+  if (failed > 0 && el('bp-err')) {
+    el('bp-err').style.display = 'inline';
+    if (el('bp-err-n')) el('bp-err-n').textContent = failed;
+  }
+  if (el('st-status')) el('st-status').textContent = done + '/' + total + ' (' + pct + '%)';
+  const elapsed = (Date.now() - BULK.startAt) / 1000;
+  if (done > 0 && elapsed > 2 && el('bp-eta')) {
+    const rate = done / elapsed;
+    const rem = Math.round((total - done) / rate);
+    el('bp-eta').textContent = rem > 3600 ? Math.round(rem/3600) + 'h' : rem > 60 ? Math.round(rem/60) + 'min' : rem + 's';
+  }
+};
+
+// Show/hide progress
+const _origShowProgress = window.showProgress;
+window.showProgress = function() {
+  const w = document.getElementById('progress-wrap');
+  if (w) w.style.display = 'block';
+};
+const _origHideProgress = window.hideProgress;
+window.hideProgress = function() {
+  const w = document.getElementById('progress-wrap');
+  if (w) w.style.display = 'none';
+};
+
+// Fix logpanel ID
+const _origShowLog = window.showLog;
+window.showLog = function() {
+  const p = document.getElementById('logpanel');
+  if (p) p.classList.add('on');
+};
+
+// Auto-check backend on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(checkBackend, 800);
+  // Restore saved backend URL
+  const _savedURL = localStorage.getItem('m666_backend');
+  if (_savedURL) {
+    BACKEND = _savedURL;
+    const _inp = document.getElementById('backend-url-input');
+    if (_inp) _inp.value = _savedURL;
+  } else {
+    const _inp = document.getElementById('backend-url-input');
+    if (_inp) _inp.value = BACKEND;
+  }
+});
+
+// ── IMPORT BODY FILE ─────────────────────────────────────────────
+function importBodyFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const isHTML = file.name.match(/\.html?$/i);
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const content = e.target.result;
+    input.value = ''; // reset so same file can be re-imported
+
+    if (isHTML) {
+      // Switch to HTML mode and load content
+      switchMode('html');
+      document.getElementById('body-html').innerHTML = content;
+      updStats();
+      toast('Fichier HTML importé ✓ (' + fmtB(content.length) + ')', 'success');
+      log('Corps HTML importé depuis : ' + file.name + ' (' + fmtB(file.size) + ')', 'ok');
+    } else {
+      // Plain text — switch to text mode
+      switchMode('plain');
+      document.getElementById('body-plain').value = content;
+      updBody();
+      toast('Fichier texte importé ✓ (' + fmtB(content.length) + ')', 'success');
+      log('Corps texte importé depuis : ' + file.name + ' (' + fmtB(file.size) + ')', 'ok');
+    }
+  };
+
+  reader.onerror = () => toast('Erreur de lecture du fichier', 'error');
+  reader.readAsText(file, 'UTF-8');
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// SPIN ENGINE — {option1|option2|option3}
+// ══════════════════════════════════════════════════════════════════
+function spinText(text) {
+  // Replace {a|b|c} with random choice — nested not supported
+  return text.replace(/\{([^{}]+)\}/g, (_, group) => {
+    const opts = group.split('|');
+    return opts[Math.floor(Math.random() * opts.length)].trim();
+  });
+}
+
+function applyVars(text, email, varMap) {
+  // Replace {{email}}
+  text = text.replace(/\{\{email\}\}/gi, email);
+  // Replace {{varname}} from varMap
+  for (const [key, vals] of Object.entries(varMap)) {
+    const re = new RegExp('\\{\\{' + key.trim() + '\\}\\}', 'gi');
+    const val = vals[Math.floor(Math.random() * vals.length)].trim();
+    text = text.replace(re, val);
+  }
+  return text;
+}
+
+function parseVarMap() {
+  const raw = document.getElementById('spin-vars') ?
+    document.getElementById('spin-vars').value : '';
+  const map = {};
+  raw.split('\n').forEach(line => {
+    const eq = line.indexOf('=');
+    if (eq < 0) return;
+    const key = line.slice(0, eq).trim();
+    const vals = line.slice(eq + 1).split(',');
+    if (key && vals.length) map[key] = vals;
+  });
+  return map;
+}
+
+function getSpunSubject(email) {
+  const spinSubj = v('spin-subject');
+  const base = v('subject');
+  const varMap = parseVarMap();
+  const template = spinSubj || base;
+  return applyVars(spinText(template), email, varMap);
+}
+
+function getSpunBody(email) {
+  const isHTML = document.getElementById('html-mode').checked;
+  const raw = isHTML
+    ? document.getElementById('body-html').innerHTML
+    : document.getElementById('body-plain').value;
+  const varMap = parseVarMap();
+  return applyVars(spinText(raw), email, varMap);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BLACKLIST
+// ══════════════════════════════════════════════════════════════════
+let BLACKLIST = new Set();
+
+function importBlacklist(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const emails = e.target.result.split(/[\n\r,;]+/)
+      .map(s => s.trim().toLowerCase()).filter(s => s.includes('@'));
+    emails.forEach(e => BLACKLIST.add(e));
+    input.value = '';
+    const countEl = document.getElementById('bl-count');
+    if (countEl) countEl.textContent = BLACKLIST.size + ' en blacklist';
+    toast(emails.length + ' emails importés en blacklist', 'success');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function applyBlacklist() {
+  const raw = document.getElementById('blacklist') ?
+    document.getElementById('blacklist').value : '';
+  raw.split(/[\n\r,;]+/).map(s => s.trim().toLowerCase())
+    .filter(s => s.includes('@')).forEach(e => BLACKLIST.add(e));
+
+  // Remove blacklisted from TO list
+  const before = APP.tags.to.length;
+  APP.tags.to = APP.tags.to.filter(e => !BLACKLIST.has(e.toLowerCase()));
+  renderTags('to');
+  updStats();
+  const removed = before - APP.tags.to.length;
+  const countEl = document.getElementById('bl-count');
+  if (countEl) countEl.textContent = BLACKLIST.size + ' en blacklist · ' + removed + ' supprimés';
+  toast('Blacklist appliquée — ' + removed + ' email(s) supprimés', removed > 0 ? 'warn' : 'info');
+}
+
+function filterByBlacklist(recipients) {
+  return recipients.filter(e => !BLACKLIST.has(e.toLowerCase()));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SPIN PANEL TOGGLE
+// ══════════════════════════════════════════════════════════════════
+function toggleSpinPanel() {
+  const panel = document.getElementById('spin-panel');
+  const arrow = document.getElementById('spin-arrow');
+  if (!panel) return;
+  const open = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = open ? 'flex' : 'none';
+  panel.style.flexDirection = 'column';
+  panel.style.gap = '14px';
+  if (arrow) arrow.classList.toggle('open', open);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LIVE STATS UPDATE
+// ══════════════════════════════════════════════════════════════════
+function showLiveStats() {
+  const el = document.getElementById('live-stats');
+  if (el) el.style.display = 'flex';
+}
+function hideLiveStats() {
+  const el = document.getElementById('live-stats');
+  if (el) el.style.display = 'none';
+}
+function updateLiveStats(sent, failed, total) {
+  const elapsed = Math.max(1, (Date.now() - BULK.startAt) / 1000);
+  const done = sent + failed;
+  const rate = (done / elapsed).toFixed(1);
+  const rem = done > 0 ? Math.round((total - done) / (done / elapsed)) : 0;
+  const eta = rem > 3600 ? Math.round(rem/3600) + 'h'
+    : rem > 60 ? Math.round(rem/60) + 'min' : rem + 's';
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+
+  const $ = id => document.getElementById(id);
+  if ($('ls-sent'))   $('ls-sent').textContent   = sent;
+  if ($('ls-failed')) $('ls-failed').textContent = failed;
+  if ($('ls-rate'))   $('ls-rate').textContent   = rate + '/s';
+  if ($('ls-eta'))    $('ls-eta').textContent    = rem > 0 ? eta : '—';
+  if ($('ls-total'))  $('ls-total').textContent  = total;
+  if ($('ls-pct'))    $('ls-pct').textContent    = pct + '%';
+
+  // Also update progress bar
+  const fill = $('pb-fill');
+  if (fill) fill.style.width = pct + '%';
+  const ok = $('bp-ok'); if (ok) ok.textContent = sent;
+  const pctEl = $('bp-pct'); if (pctEl) pctEl.textContent = pct + '%';
+  if (failed > 0) {
+    const errEl = $('bp-err'); if (errEl) errEl.style.display = 'inline';
+    const errN = $('bp-err-n'); if (errN) errN.textContent = failed;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// BODY MODE MANAGER — plain / html / spin
+// ══════════════════════════════════════════════════════════════════
+let BODY_MODE = 'plain'; // 'plain' | 'html' | 'spin'
+let SPIN_LETTERS = ['']; // Array of letter templates
+
+function setBodyMode(mode) {
+  BODY_MODE = mode;
+  const plainBtn = document.getElementById('mode-plain-btn');
+  const htmlBtn  = document.getElementById('mode-html-btn');
+  const spinBtn  = document.getElementById('mode-spin-btn');
+  const plainEd  = document.getElementById('plain-ed');
+  const htmlEd   = document.getElementById('html-ed');
+  const spinEd   = document.getElementById('spin-ed');
+  const chk      = document.getElementById('html-mode');
+
+  [plainBtn, htmlBtn, spinBtn].forEach(b => { if(b) b.classList.remove('on'); });
+  [plainEd, htmlEd, spinEd].forEach(d => { if(d) d.style.display = 'none'; });
+
+  if (mode === 'plain') {
+    if(plainBtn) plainBtn.classList.add('on');
+    if(plainEd)  plainEd.style.display = 'block';
+    if(chk)      chk.checked = false;
+    // Also call togHtml for compat
+    if(typeof togHtml === 'function') { chk.checked = false; togHtml(); }
+  } else if (mode === 'html') {
+    if(htmlBtn) htmlBtn.classList.add('on');
+    if(htmlEd)  htmlEd.style.display = 'block';
+    if(chk)     chk.checked = true;
+    if(typeof togHtml === 'function') { chk.checked = true; togHtml(); }
+  } else if (mode === 'spin') {
+    if(spinBtn) spinBtn.classList.add('on');
+    if(spinEd)  spinEd.style.display = 'block';
+    if(chk)     chk.checked = false;
+    if (SPIN_LETTERS.length === 0) addSpinLetter();
+    renderSpinLetters();
+  }
+  updStats();
+}
+
+// Override old switchMode to use new setBodyMode
+function switchMode(mode) { setBodyMode(mode); }
+
+// ══════════════════════════════════════════════════════════════════
+// SPIN LETTERS — multiple complete email templates
+// ══════════════════════════════════════════════════════════════════
+function addSpinLetter() {
+  SPIN_LETTERS.push('');
+  renderSpinLetters();
+}
+
+function removeSpinLetter(idx) {
+  if (SPIN_LETTERS.length <= 1) { toast('Au moins 1 lettre requise', 'warn'); return; }
+  SPIN_LETTERS.splice(idx, 1);
+  renderSpinLetters();
+}
+
+function updateSpinLetter(idx, val) {
+  SPIN_LETTERS[idx] = val;
+}
+
+function renderSpinLetters() {
+  const wrap = document.getElementById('spin-letters-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  SPIN_LETTERS.forEach((letter, i) => {
+    const div = document.createElement('div');
+    div.className = 'spin-letter';
+
+    const hd = document.createElement('div');
+    hd.className = 'spin-letter-hd';
+    hd.innerHTML = `<span class="spin-letter-num">Lettre ${i+1}</span>
+      <span style="font-size:12px;color:var(--t3)">${letter.length} caractères</span>`;
+
+    const rmBtn = document.createElement('button');
+    rmBtn.className = 'spin-letter-rm';
+    rmBtn.textContent = '×';
+    rmBtn.title = 'Supprimer';
+    rmBtn.onclick = () => removeSpinLetter(i);
+    hd.appendChild(rmBtn);
+
+    const ta = document.createElement('textarea');
+    ta.value = letter;
+    ta.placeholder = `Lettre ${i+1} — rédigez ici\n\nUtilisez {variante1|variante2} et {{prenom}}\n\nCordialement`;
+    ta.style.cssText = 'width:100%;min-height:130px;border:none;border-radius:0;background:var(--s2);padding:13px;font-family:var(--sans);font-size:14px;outline:none;resize:vertical;color:var(--t)';
+    ;(function(idx) {
+      ta.addEventListener('input', () => {
+        updateSpinLetter(idx, ta.value);
+        hd.querySelector('span:nth-child(2)').textContent = ta.value.length + ' caractères';
+      });
+    })(i);
+
+    div.appendChild(hd);
+    div.appendChild(ta);
+    wrap.appendChild(div);
+  });
+}
+
+function getSpinLetter(email) {
+  // Pick random letter, then apply spin + vars
+  const varMap = parseVarMap();
+  const letter = SPIN_LETTERS[Math.floor(Math.random() * SPIN_LETTERS.length)] || '';
+  return applyVars(spinText(letter), email, varMap);
+}
+
+function getCurrentBody(email) {
+  if (BODY_MODE === 'spin') return getSpinLetter(email);
+  if (BODY_MODE === 'html') return getSpunBody(email); // uses body-html
+  return getSpunBody(email); // uses body-plain
+}
+
+function getCurrentBodyForPayload() {
+  // Returns raw template (no spin applied yet) for server-side spin
+  if (BODY_MODE === 'spin') {
+    // Combine all letters with ||| separator — server picks one
+    return SPIN_LETTERS.join('|||LETTER|||');
+  }
+  if (BODY_MODE === 'html') return document.getElementById('body-html').innerHTML;
+  return document.getElementById('body-plain').value;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ANTI-SPAM ANALYZER
+// ══════════════════════════════════════════════════════════════════
+const SPAM_WORDS = [
+  'gratuit','free','urgent','gagné','won','prize','prix','cliquez','click here',
+  'félicitations','congratulations','offre spéciale','special offer','limité',
+  'unsubscribe','désabonner','casino','viagra','million','lottery','loterie',
+  'make money','argent facile','100%','sans frais','no cost','order now',
+  'buy now','achetez','act now','agissez','guarantee','garanti','risk free',
+  'sans risque','winner','gagnant','selected','sélectionné','deal','promo'
+];
+
+const SPAM_PATTERNS = [
+  { re: /!{2,}/g,           label: 'Multiples !!!',           pts: 3 },
+  { re: /\${2,}/g,          label: 'Multiples $$$',           pts: 4 },
+  { re: /[A-Z]{5,}/g,       label: 'MOTS EN MAJUSCULES',      pts: 3 },
+  { re: /\b\d{3,}%/g,       label: 'Pourcentages suspects',   pts: 2 },
+  { re: /<img[^>]+>/gi,     label: 'Images sans texte',       pts: 2 },
+  { re: /color:\s*red/gi,   label: 'Texte rouge',             pts: 1 },
+  { re: /font-size:\s*[2-9]\d/gi, label: 'Texte très grand', pts: 1 },
+];
+
+function runAntiSpam() {
+  const subject = v('subject') || v('spin-subject') || '';
+  const isHTML  = BODY_MODE === 'html';
+  let body;
+  if (BODY_MODE === 'spin') body = SPIN_LETTERS.join(' ');
+  else if (BODY_MODE === 'html') body = document.getElementById('body-html') ? document.getElementById('body-html').innerHTML : '';
+  else body = document.getElementById('body-plain') ? document.getElementById('body-plain').value : '';
+  const bodyText = body.replace(/<[^>]+>/g, ' ');
+  const full = (subject + ' ' + bodyText).toLowerCase();
+
+  const issues = [];
+  let score = 100; // Start at 100, subtract for issues
+
+  // 1. Spam words
+  const foundWords = SPAM_WORDS.filter(w => full.includes(w.toLowerCase()));
+  if (foundWords.length > 0) {
+    const pts = Math.min(foundWords.length * 4, 40);
+    score -= pts;
+    issues.push({ type: 'error', icon: '🚫', label: 'Mots spam détectés', detail: foundWords.slice(0,6).join(', '), pts });
+  }
+
+  // 2. Pattern checks
+  SPAM_PATTERNS.forEach(p => {
+    const matches = bodyText.match(p.re);
+    if (matches) {
+      score -= p.pts * matches.length;
+      issues.push({ type: 'warn', icon: '⚠️', label: p.label, detail: matches.slice(0,3).join(', '), pts: p.pts });
+    }
+  });
+
+  // 3. Subject length
+  if (subject.length === 0) { score -= 10; issues.push({ type: 'error', icon: '✗', label: 'Objet vide', pts: 10 }); }
+  else if (subject.length > 60) { score -= 5; issues.push({ type: 'warn', icon: '⚠️', label: 'Objet trop long (' + subject.length + ' car.)', detail: 'Idéal : 30–55 caractères', pts: 5 }); }
+  else { issues.push({ type: 'ok', icon: '✓', label: 'Longueur objet correcte (' + subject.length + ' car.)', pts: 0 }); }
+
+  // 4. HTML ratio
+  if (isHTML && body.length > 0) {
+    const ratio = bodyText.trim().length / body.length;
+    if (ratio < 0.2) { score -= 15; issues.push({ type: 'error', icon: '🚫', label: 'Trop peu de texte visible vs HTML (' + Math.round(ratio*100) + '%)', detail: 'Minimum recommandé : 30%', pts: 15 }); }
+    else if (ratio < 0.4) { score -= 5; issues.push({ type: 'warn', icon: '⚠️', label: 'Ratio texte/HTML faible (' + Math.round(ratio*100) + '%)', pts: 5 }); }
+    else { issues.push({ type: 'ok', icon: '✓', label: 'Ratio texte/HTML correct (' + Math.round(ratio*100) + '%)', pts: 0 }); }
+  }
+
+  // 5. Body length
+  if (bodyText.trim().length < 50) { score -= 10; issues.push({ type: 'warn', icon: '⚠️', label: 'Message trop court', detail: 'Min recommandé : 50 caractères de texte', pts: 10 }); }
+  else { issues.push({ type: 'ok', icon: '✓', label: 'Longueur message OK (' + bodyText.trim().length + ' car.)', pts: 0 }); }
+
+  // 6. Link checks
+  const links = body.match(/href="([^"]+)"/gi) || [];
+  const shorteners = links.filter(l => /bit\.ly|tinyurl|goo\.gl|ow\.ly|t\.co/i.test(l));
+  if (shorteners.length > 0) { score -= 10; issues.push({ type: 'error', icon: '🚫', label: 'Raccourcisseurs de liens détectés', detail: 'bit.ly etc. augmentent le score spam', pts: 10 }); }
+
+  // 7. From address
+  const from = v('from-email');
+  if (!from) { score -= 10; issues.push({ type: 'error', icon: '✗', label: 'Adresse expéditeur manquante', pts: 10 }); }
+  else if (from.includes('noreply') || from.includes('no-reply')) {
+    score -= 5; issues.push({ type: 'warn', icon: '⚠️', label: 'Adresse noreply réduisent l\'engagement', pts: 5 });
+  } else { issues.push({ type: 'ok', icon: '✓', label: 'Adresse expéditeur : ' + from, pts: 0 }); }
+
+  // 8. Spin check
+  if (BODY_MODE === 'spin' && SPIN_LETTERS.length > 1) {
+    score = Math.min(score + 5, 100);
+    issues.push({ type: 'ok', icon: '✓', label: 'Rotation de ' + SPIN_LETTERS.length + ' lettres — excellent pour la délivrabilité', pts: 0 });
+  } else if (SPIN_LETTERS.length > 0 && spinText(SPIN_LETTERS[0]) !== SPIN_LETTERS[0]) {
+    score = Math.min(score + 3, 100);
+    issues.push({ type: 'ok', icon: '✓', label: 'Spin {a|b} détecté dans le message', pts: 0 });
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Render results
+  const color = score >= 80 ? 'var(--g)' : score >= 60 ? 'var(--y)' : 'var(--r)';
+  const label = score >= 80 ? 'Bon — faible risque spam' : score >= 60 ? 'Moyen — améliorations possibles' : 'Risque élevé — corrigez les problèmes';
+
+  const scoreEl = document.getElementById('aspam-score');
+  if (scoreEl) { scoreEl.textContent = score; scoreEl.style.color = color; }
+
+  const body_el = document.getElementById('aspam-body');
+  if (!body_el) return;
+  body_el.innerHTML = '';
+
+  // Score bar
+  const barWrap = document.createElement('div');
+  barWrap.innerHTML = `<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px">
+    <span style="color:var(--t2)">Score anti-spam</span>
+    <span style="color:${color};font-weight:600">${label}</span>
+  </div>
+  <div class="aspam-bar"><div class="aspam-fill" style="width:${score}%;background:${color}"></div></div>`;
+  body_el.appendChild(barWrap);
+
+  // Issues list
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:7px;margin-top:4px';
+  issues.forEach(issue => {
+    const row = document.createElement('div');
+    const bg = issue.type === 'ok' ? 'rgba(0,245,160,.06)' : issue.type === 'error' ? 'rgba(255,77,109,.07)' : 'rgba(255,201,71,.06)';
+    const border = issue.type === 'ok' ? 'rgba(0,245,160,.2)' : issue.type === 'error' ? 'rgba(255,77,109,.2)' : 'rgba(255,201,71,.2)';
+    const col = issue.type === 'ok' ? 'var(--g)' : issue.type === 'error' ? 'var(--r)' : 'var(--y)';
+    row.style.cssText = `display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border-radius:7px;background:${bg};border:1px solid ${border}`;
+    row.innerHTML = `<span style="font-size:14px;flex-shrink:0">${issue.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:${col}">${issue.label}${issue.pts > 0 ? ' <span style="font-size:11px;color:var(--t3)">(-' + issue.pts + ' pts)</span>' : ''}</div>
+        ${issue.detail ? '<div style="font-size:12px;color:var(--t3);margin-top:2px">' + issue.detail + '</div>' : ''}
+      </div>`;
+    list.appendChild(row);
+  });
+  body_el.appendChild(list);
+
+  // Tips
+  if (score < 100) {
+    const tips = document.createElement('div');
+    tips.className = 'ib info';
+    tips.style.marginTop = '4px';
+    tips.innerHTML = '<span class="ib-ico">💡</span><div><strong>Conseils rapides :</strong><br>' +
+      '• Utilisez le mode <strong>🔄 Spin</strong> avec plusieurs lettres pour maximiser la délivrabilité<br>' +
+      '• Évitez les mots spam listés ci-dessus<br>' +
+      '• Ajoutez un vrai texte sous vos images HTML<br>' +
+      '• Testez sur <a href="https://www.mail-tester.com" target="_blank">mail-tester.com</a></div>';
+    body_el.appendChild(tips);
+  }
+}
+
+
+// ── FIELD UTILS ───────────────────────────────────────────────────
+function clearField(field) {
+  if (APP.tags[field].length === 0) return;
+  if (!confirm('Supprimer les ' + APP.tags[field].length + ' destinataires ?')) return;
+  APP.tags[field] = [];
+  renderTags(field);
+  updStats();
+  updateToCount();
+  toast('Liste vidée', 'info');
+}
+
+function dedupField(field) {
+  const before = APP.tags[field].length;
+  APP.tags[field] = [...new Set(APP.tags[field].map(e => e.toLowerCase()))];
+  const removed = before - APP.tags[field].length;
+  renderTags(field);
+  updStats();
+  updateToCount();
+  if (removed > 0) toast(removed + ' doublons supprimés', 'success');
+  else toast('Aucun doublon trouvé', 'info');
+}
+
+function updateToCount() {
+  const el = document.getElementById('to-count');
+  if (!el) return;
+  const n = APP.tags.to.length;
+  el.textContent = n.toLocaleString('fr-FR') + ' destinataire' + (n > 1 ? 's' : '');
+  el.style.color = n > 1000 ? 'var(--y)' : n > 0 ? 'var(--g)' : 'var(--t3)';
+}
+
+
+// ── BREVO MODE SWITCHER ───────────────────────────────────────────
+let BREVO_MODE = 'api'; // 'api' | 'smtp'
+
+function setBrevoMode(mode) {
+  BREVO_MODE = mode;
+  const apiBtn   = document.getElementById('bv-mode-api-btn');
+  const smtpBtn  = document.getElementById('bv-mode-smtp-btn');
+  const apiFields  = document.getElementById('bv-api-fields');
+  const smtpFields = document.getElementById('bv-smtp-fields');
+  if (mode === 'api') {
+    if (apiBtn)    apiBtn.classList.add('on');
+    if (smtpBtn)   smtpBtn.classList.remove('on');
+    if (apiFields) apiFields.style.display = 'block';
+    if (smtpFields) smtpFields.style.display = 'none';
+  } else {
+    if (smtpBtn)   smtpBtn.classList.add('on');
+    if (apiBtn)    apiBtn.classList.remove('on');
+    if (smtpFields) { smtpFields.style.display = 'flex'; smtpFields.style.flexDirection = 'column'; smtpFields.style.gap = '12px'; }
+    if (apiFields) apiFields.style.display = 'none';
+  }
+}
+
+async function testBrevoAuto() {
+  if (BREVO_MODE === 'api') {
+    await testBrevoAPI();
+  } else {
+    // SMTP mode — use backend
+    if (!backendOnline) {
+      toast('Backend requis pour le mode SMTP — lancez node server.js', 'error');
+      showLog();
+      log('Mode SMTP Brevo nécessite le backend node server.js', 'warn');
+      return;
+    }
+    await testProviderBackend('brevo');
+  }
+}
+
+
+// ── BACKEND URL ───────────────────────────────────────────────────
+function applyBackendURL() {
+  const inp = document.getElementById('backend-url-input');
+  if (!inp) return;
+  let url = inp.value.trim().replace(/\/+$/, '');
+  if (!url) return;
+  if (!url.startsWith('http')) url = 'http://' + url;
+  BACKEND = url;
+  inp.value = url;
+  try { localStorage.setItem('m666_backend', url); } catch(e) {}
+  toast('Backend URL : ' + url, 'info');
+  showLog();
+  log('Backend URL changée : ' + url, 'info');
+  backendOnline = false;
+  const badge = document.getElementById('bb');
+  if (badge) badge.className = 'bb checking';
+  const label = document.getElementById('bb-label');
+  if (label) label.textContent = 'Test…';
+  setTimeout(checkBackend, 300);
+}
+
+</script>
+</body>
+</html>
